@@ -12,7 +12,10 @@ setup(
         "sdk"
     ],
     install_requires=[
+        "autobahn",
         "pyelliptic",
-        "requests"
+        "requests",
+        "twisted",
+        "zope.interface"
     ]
 )
