@@ -8,10 +8,10 @@ import base64
 class DSLink:
     def __init__(self, config):
         self.keypair = Keypair()
-        self.hs = Handshake(config.name, config.broker, self.keypair, config.responder, config.requester)
-        self.server_config = self.hs.run_handshake()
+        self.handshake = Handshake(config.name, config.broker, self.keypair, config.responder, config.requester)
+        self.server_config = self.handshake.run_handshake()
         self.shared_secret = self.keypair.keypair.get_ecdh_key(base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"])))
-        self.ws = WebSocket(self.server_config["salt"], self.shared_secret, config.broker, self.hs.get_dsid())
+        self.websocket = WebSocket(self.server_config["salt"], self.shared_secret, config.broker, self.handshake.get_dsid())
 
     @staticmethod
     def add_padding(string):
