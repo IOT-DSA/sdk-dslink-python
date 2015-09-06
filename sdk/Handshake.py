@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import binascii
 import json
 import os.path
 import pickle
@@ -42,10 +41,7 @@ class Handshake:
         self.shared_secret = self.keypair.keypair.get_ecdh_key(base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"])))
 
     def start_websocket(self):
-        print(len(self.shared_secret))
-
-        print(self.shared_secret)
-        dsAuth = binascii.hexlify(bytes(self.server_config["salt"], "utf-8")) + self.shared_secret
+        dsAuth = bytes(self.server_config["salt"], "utf-8") + self.shared_secret
         dsAuth = base64.urlsafe_b64encode(hashlib.sha256(dsAuth).digest()).decode("utf-8").replace("=", "")
 
         # TODO(logangorence): Properly strip and replace with WebSocket path
@@ -62,6 +58,7 @@ class Handshake:
         while len(string) % 4 != 0:
             string += "="
         return string
+
 
 class Keypair:
     def __init__(self):
@@ -96,6 +93,7 @@ class Keypair:
 
     def get_ecdh_key(self, pubkey):
         self.keypair.get_ecdh_key(pubkey.encode("utf-8"))
+
 
 class DSAWebSocket(WebSocketClientProtocol):
     def onOpen(self):
