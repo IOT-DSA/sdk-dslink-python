@@ -34,10 +34,27 @@ class DSAWebSocket(WebSocketClientProtocol):
     def onMessage(self, payload, isBinary):
         i = json.loads(payload.decode("utf-8"))
         print("Recv:", i)
-        if "msg" in i:
-            self.sendMessage({
-                "ack": i["msg"]
-            })
+        m = {}
+        ack = False
+        if "requests" in i and len(i["requests"]) > 0:
+            ack = True
+            m["responses"] = []
+            for req in i["requests"]:
+                m["responses"].append({
+                    "rid": req["rid"],
+                    "stream": "open",
+                    "updates": [
+                        [
+                            "$is",
+                            "node"
+                        ]
+                    ]
+                })
+        if "responses" in i and len(i["responses"]) > 0:
+            ack = True
+        if ack:
+            m["ack"] = i["msg"]
+        self.sendMessage(m)
 
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
         payload["msg"] = self.msg
