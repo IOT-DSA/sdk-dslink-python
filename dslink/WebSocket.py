@@ -4,6 +4,11 @@ import json
 
 from autobahn.twisted.websocket import WebSocketClientProtocol, connectWS, WebSocketClientFactory
 from twisted.internet import reactor
+from dslink.Node import Node
+
+from dslink.Request import Request
+from dslink.Response import Response
+
 
 # TODO(logangorence): Switch to asyncio
 class WebSocket:
@@ -24,9 +29,16 @@ class DSAWebSocket(WebSocketClientProtocol):
     def __init__(self):
         super().__init__()
         self.msg = 0
+        self.superRoot = Node(None, None)
+
+    def sendPingMsg(self):
+        print("DEBUG Ping")
+        self.sendMessage({})
+        reactor.callLater(30, self.sendPingMsg)
 
     def onOpen(self):
         print("Open!")
+        self.sendPingMsg()
 
     def onClose(self, wasClean, code, reason):
         print("Closed!")
@@ -38,23 +50,22 @@ class DSAWebSocket(WebSocketClientProtocol):
         ack = False
         if "requests" in i and len(i["requests"]) > 0:
             ack = True
-            m["responses"] = []
-            for req in i["requests"]:
-                m["responses"].append({
-                    "rid": req["rid"],
-                    "stream": "open",
-                    "updates": [
-                        [
-                            "$is",
-                            "node"
-                        ]
-                    ]
-                })
+            self.handleRequests(i["requests"])
         if "responses" in i and len(i["responses"]) > 0:
             ack = True
-        if ack:
+            self.handleResponses(i["responses"])
+        # if ack:
+        if "msg" in i:
             m["ack"] = i["msg"]
         self.sendMessage(m)
+
+    def handleRequests(self, requests):
+        for request in requests:
+            Request(request)
+
+    def handleResponse(self, responses):
+        for response in responses:
+            Response(response)
 
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
         payload["msg"] = self.msg

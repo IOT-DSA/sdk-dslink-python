@@ -1,6 +1,6 @@
-from sdk.Crypto import Keypair
-from sdk.Handshake import Handshake
-from sdk.WebSocket import WebSocket
+from dslink.Crypto import Keypair
+from dslink.Handshake import Handshake
+from dslink.WebSocket import WebSocket
 
 import base64
 
