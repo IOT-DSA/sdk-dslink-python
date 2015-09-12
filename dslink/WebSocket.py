@@ -50,7 +50,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         ack = False
         if "requests" in i and len(i["requests"]) > 0:
             ack = True
-            self.handleRequests(i["requests"])
+            m["responses"] = self.handleRequests(i["requests"])
         if "responses" in i and len(i["responses"]) > 0:
             ack = True
             self.handleResponses(i["responses"])
@@ -60,8 +60,10 @@ class DSAWebSocket(WebSocketClientProtocol):
         self.sendMessage(m)
 
     def handleRequests(self, requests):
+        i = []
         for request in requests:
-            Request(request)
+            i.append(Request(request).process().get_stream())
+        return i
 
     def handleResponse(self, responses):
         for response in responses:

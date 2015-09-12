@@ -7,12 +7,14 @@ class Request:
         self.request = request
         self.rid = request["rid"]
         self.method = request["method"]
+
+    def process(self):
         if self.method == "list":
             print("list")
-            Response({
+            return Response({
                 "rid": self.rid,
                 "stream": "open",
-                "updates": self.test()
+                "updates": self.test().stream()
             })
         elif self.method == "subscribe":
             # TODO(logangorence)
@@ -26,6 +28,7 @@ class Request:
         elif self.method == "set":
             # TODO(logangorence)
             print("set")
+
 
     @staticmethod
     def test():

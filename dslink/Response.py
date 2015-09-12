@@ -4,7 +4,7 @@ class Response:
         self.stream = response["stream"]
         self.updates = response["updates"]
 
-    def stream(self):
+    def get_stream(self):
         s = {}
         s["rid"] = self.rid
         s["stream"] = self.stream
