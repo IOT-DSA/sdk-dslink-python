@@ -2,7 +2,8 @@ import base64
 import hashlib
 import json
 
-from autobahn.twisted.websocket import WebSocketClientProtocol, connectWS, WebSocketClientFactory
+import asyncio
+from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
 from twisted.internet import reactor
 from dslink.Node import Node
 
@@ -10,7 +11,6 @@ from dslink.Request import Request
 from dslink.Response import Response
 
 
-# TODO(logangorence): Switch to asyncio
 class WebSocket:
     def __init__(self, salt, shared_secret, broker, dsid):
         self.auth = bytes(salt, "utf-8") + shared_secret
@@ -20,9 +20,11 @@ class WebSocket:
         websocket_uri = broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + dsid + "&auth=" + self.auth
         factory = WebSocketClientFactory(websocket_uri)
         factory.protocol = DSAWebSocket
-        connectWS(factory)
-
-        reactor.run()
+        loop = asyncio.get_event_loop()
+        coro = loop.create_connection(factory, host="127.0.0.1", port="8080")
+        loop.run_until_complete(coro)
+        loop.run_forever()
+        loop.close()
 
 
 class DSAWebSocket(WebSocketClientProtocol):

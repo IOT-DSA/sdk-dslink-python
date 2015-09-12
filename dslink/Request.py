@@ -21,13 +21,20 @@ class Request:
             print("sub")
         elif self.method == "unsubscribe":
             # TODO(logangorence)
-            print("unsub")
+            print("unsubscribe")
         elif self.method == "invoke":
             # TODO(logangorence)
             print("invoke")
         elif self.method == "set":
             # TODO(logangorence)
             print("set")
+        elif self.method == "close":
+            # TODO(logangorence)
+            print("close")
+            return Response({
+                "rid": self.rid,
+                "stream": "closed"
+            })
 
 
     @staticmethod
