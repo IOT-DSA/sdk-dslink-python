@@ -12,6 +12,7 @@ setup(
         "dslink"
     ],
     install_requires=[
+        "asyncio",
         "autobahn",
         "pyelliptic",
         "requests",
