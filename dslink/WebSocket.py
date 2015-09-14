@@ -1,27 +1,29 @@
 import base64
 import hashlib
 import json
+from threading import Timer
+from urllib.parse import urlparse
 
 import asyncio
 from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
-from twisted.internet import reactor
-from dslink.Node import Node
 
 from dslink.Request import Request
 from dslink.Response import Response
 
 
 class WebSocket:
-    def __init__(self, salt, shared_secret, broker, dsid):
-        self.auth = bytes(salt, "utf-8") + shared_secret
+    def __init__(self, link):
+        self.link = link
+        self.auth = bytes(link.salt, "utf-8") + link.shared_secret
         self.auth = base64.urlsafe_b64encode(hashlib.sha256(self.auth).digest()).decode("utf-8").replace("=", "")
 
         # TODO(logangorence): Properly strip and replace with WebSocket path
-        websocket_uri = broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + dsid + "&auth=" + self.auth
+        websocket_uri = link.config.broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + link.dsid + "&auth=" + self.auth
+        url = urlparse(websocket_uri)
         factory = WebSocketClientFactory(websocket_uri)
         factory.protocol = DSAWebSocket
         loop = asyncio.get_event_loop()
-        coro = loop.create_connection(factory, host="127.0.0.1", port="8080")
+        coro = loop.create_connection(factory, host=url.hostname, port=url.port)
         loop.run_until_complete(coro)
         loop.run_forever()
         loop.close()
@@ -31,19 +33,18 @@ class DSAWebSocket(WebSocketClientProtocol):
     def __init__(self):
         super().__init__()
         self.msg = 0
-        self.superRoot = Node(None, None)
 
     def sendPingMsg(self):
         print("DEBUG Ping")
         self.sendMessage({})
-        reactor.callLater(30, self.sendPingMsg)
+        i = Timer(30, self.sendPingMsg, ())
+        i.start()
 
     def onOpen(self):
-        print("Open!")
         self.sendPingMsg()
 
     def onClose(self, wasClean, code, reason):
-        print("Closed!")
+        print("WebSocket was closed.")
 
     def onMessage(self, payload, isBinary):
         i = json.loads(payload.decode("utf-8"))
@@ -56,10 +57,9 @@ class DSAWebSocket(WebSocketClientProtocol):
         if "responses" in i and len(i["responses"]) > 0:
             ack = True
             self.handleResponses(i["responses"])
-        # if ack:
-        if "msg" in i:
+        if ack:
             m["ack"] = i["msg"]
-        self.sendMessage(m)
+            self.sendMessage(m)
 
     def handleRequests(self, requests):
         i = []

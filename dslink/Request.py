@@ -1,4 +1,3 @@
-from dslink.Node import Node
 from dslink.Response import Response
 
 
@@ -35,10 +34,3 @@ class Request:
                 "rid": self.rid,
                 "stream": "closed"
             })
-
-
-    @staticmethod
-    def test():
-        superRoot = Node(None, None)
-        superRoot.add_child(Node("Create", superRoot))
-        return superRoot

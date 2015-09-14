@@ -9,13 +9,12 @@ setup(
     author_email="loganjohngorence@gmail.com",
     license="Apache 2.0",
     packages=[
-        "sdk"
+        "dslink"
     ],
     install_requires=[
         "autobahn",
         "pyelliptic",
         "requests",
-        "twisted",
         "zope.interface"
     ]
 )
