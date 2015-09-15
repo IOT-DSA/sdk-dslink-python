@@ -8,7 +8,10 @@ class Node:
         self.attributes = {}
         if parent is not None:
             self.name = name
-            self.path = parent.path + "/" + name
+            if parent.path.endswith("/"):
+                self.path = parent.path + name
+            else:
+                self.path = parent.path + "/" + name
         else:
             if name is not None:
                 self.name = name
@@ -16,17 +19,19 @@ class Node:
             else:
                 self.name = ""
                 self.path = ""
+        print(self.path)
 
     def has_value(self):
         return False
 
     def stream(self):
+        print("streaming: " + self.path)
         out = dict(self.config)
         out.update(self.attributes)
         out = self.o_to_a(out)
         for child in self.children:
             child = self.children[child]
-            if (child.has_value()):
+            if child.has_value():
                 val = {
                     "value": child.value,
                     # TODO(logangorence) last updated timestamp
@@ -45,6 +50,20 @@ class Node:
 
     def add_child(self, child):
         self.children[child.name] = child
+
+    def get(self, path):
+        print("req: " + path)
+        print("ours: " + self.path)
+        if path == "/":
+            return self
+        else:
+            try:
+                i = path.index("/", 2)
+                child = path[1:i]
+                return self.children[child].get(path[i:])
+            except ValueError:
+                child = path[1:]
+                return self.children[child]
 
     @staticmethod
     def o_to_a(obj):

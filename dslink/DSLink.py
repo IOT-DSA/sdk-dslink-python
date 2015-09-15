@@ -7,6 +7,10 @@ import base64
 
 
 class DSLink:
+    super_root = Node("", None)
+    super_root.add_child(Node("Create", super_root))
+    super_root.add_child(Node("Delete", super_root))
+
     def __init__(self, config):
         self.config = config
         self.keypair = Keypair()
@@ -15,7 +19,6 @@ class DSLink:
         self.salt = self.server_config["salt"]
         self.dsid = self.handshake.get_dsid()
         self.shared_secret = self.keypair.keypair.get_ecdh_key(base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"])))
-        self.super_root = Node(None, None)
         self.websocket = WebSocket(self)
 
     @staticmethod

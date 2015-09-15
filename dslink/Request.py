@@ -1,3 +1,4 @@
+import dslink
 from dslink.Response import Response
 
 
@@ -13,7 +14,7 @@ class Request:
             return Response({
                 "rid": self.rid,
                 "stream": "open",
-                "updates": self.test().stream()
+                "updates": dslink.DSLink.DSLink.super_root.get(self.request["path"]).stream()
             })
         elif self.method == "subscribe":
             # TODO(logangorence)
