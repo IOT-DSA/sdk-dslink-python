@@ -19,16 +19,14 @@ class Node:
             else:
                 self.name = ""
                 self.path = ""
-        print(self.path)
 
     def has_value(self):
         return False
 
     def stream(self):
-        print("streaming: " + self.path)
-        out = dict(self.config)
-        out.update(self.attributes)
-        out = self.o_to_a(out)
+        out = []
+        for k in self.config:
+            out.append([k, self.config[k]])
         for child in self.children:
             child = self.children[child]
             if child.has_value():
@@ -52,8 +50,6 @@ class Node:
         self.children[child.name] = child
 
     def get(self, path):
-        print("req: " + path)
-        print("ours: " + self.path)
         if path == "/":
             return self
         else:

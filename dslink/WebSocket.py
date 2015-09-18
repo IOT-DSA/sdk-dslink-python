@@ -74,6 +74,7 @@ class DSAWebSocket(WebSocketClientProtocol):
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
         payload["msg"] = self.msg
         self.msg += 1
+        payload = json.dumps(payload)
         print("Sent:", payload)
-        payload = json.dumps(payload).encode("utf-8")
+        payload = payload.encode("utf-8")
         super().sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)
