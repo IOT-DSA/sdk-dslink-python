@@ -1,7 +1,7 @@
 import base64
 import hashlib
 import json
-from threading import Timer
+from threading import Timer, Thread
 from urllib.parse import urlparse
 
 import asyncio
@@ -18,12 +18,18 @@ class WebSocket:
         self.auth = base64.urlsafe_b64encode(hashlib.sha256(self.auth).digest()).decode("utf-8").replace("=", "")
 
         # TODO(logangorence): Properly strip and replace with WebSocket path
-        websocket_uri = link.config.broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + link.dsid + "&auth=" + self.auth
-        url = urlparse(websocket_uri)
-        factory = WebSocketClientFactory(websocket_uri)
-        factory.protocol = DSAWebSocket
+        self.websocket_uri = link.config.broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + link.dsid + "&auth=" + self.auth
+        self.url = urlparse(self.websocket_uri)
+
         loop = asyncio.get_event_loop()
-        coro = loop.create_connection(factory, host=url.hostname, port=url.port)
+        t = Thread(target=self.start_ws, args=(loop,))
+        t.start()
+
+    def start_ws(self, loop):
+        asyncio.set_event_loop(loop)
+        factory = WebSocketClientFactory(self.websocket_uri)
+        factory.protocol = DSAWebSocket
+        coro = loop.create_connection(factory, host=self.url.hostname, port=self.url.port)
         loop.run_until_complete(coro)
         loop.run_forever()
         loop.close()
