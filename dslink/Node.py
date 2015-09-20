@@ -1,5 +1,4 @@
-from datetime import datetime
-import logging
+from dslink.Value import Value
 
 
 class Node:
@@ -7,8 +6,7 @@ class Node:
         if parent is not None:
             self.link = parent.link
         self.parent = parent
-        self.value = None
-        self.updated_at = None
+        self.value = Value()
         self.children = {}
         self.config = {
             "$is": "node"
@@ -30,30 +28,33 @@ class Node:
                 self.path = ""
 
     def has_value(self):
-        return self.value is not None
+        return self.value.type is not None
+
+    def set_type(self, t):
+        # TODO(logangorence) Check for valid type
+        self.value.set_type(t)
+        self.config["$type"] = t
 
     def set_value(self, value):
         # Set value and updated timestamp
-        self.value = value
-        self.updated_at = datetime.now()
-
-        # TODO(logangorence) Clean this up
-        # Update any subscribers
-        for s in self.subscribers:
-            self.link.wsp.sendMessage({
-                "responses": [
-                    {
-                        "rid": 0,
-                        "updates": [
-                            [
-                                s,
-                                value,
-                                self.updated_at.isoformat()
+        if self.value.set_value(value):
+            # TODO(logangorence) Clean this up
+            # Update any subscribers
+            for s in self.subscribers:
+                self.link.wsp.sendMessage({
+                    "responses": [
+                        {
+                            "rid": 0,
+                            "updates": [
+                                [
+                                    s,
+                                    value,
+                                    self.value.updated_at.isoformat()
+                                ]
                             ]
-                        ]
-                    }
-                ]
-            })
+                        }
+                    ]
+                })
 
     def stream(self):
         out = []
@@ -63,8 +64,8 @@ class Node:
             child = self.children[child]
             if child.has_value():
                 val = {
-                    "value": child.value,
-                    "ts": child.updated_at.isoformat()
+                    "value": child.value.value,
+                    "ts": child.value.updated_at.isoformat()
                 }
             else:
                 val = {}

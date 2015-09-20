@@ -12,6 +12,6 @@ def updateRandomValue():
 
 testValue = Node("TestValue", link.super_root)
 link.super_root.add_child(testValue)
+testValue.set_type("number")
 testValue.set_value(1)
-testValue.config["$type"] = "number"
 updateRandomValue()
