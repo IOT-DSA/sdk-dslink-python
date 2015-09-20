@@ -12,10 +12,6 @@ class DSLink:
         # Temporary Node tree
         self.super_root = Node("", None)
         self.super_root.link = self
-        self.super_root.add_child(Node("TestValue", self.super_root))
-        self.super_root.add_child(Node("TestNode", self.super_root))
-        self.super_root.get("/TestValue").set_value(1)
-        self.super_root.get("/TestValue").config["$type"] = "number"
 
         # Logger setup
         formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')

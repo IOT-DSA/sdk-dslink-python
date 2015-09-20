@@ -54,16 +54,9 @@ class DSAWebSocket(WebSocketClientProtocol):
         i = Timer(30, self.sendPingMsg, ())
         i.start()
 
-    def updateFakeValue(self):
-        self.logger.debug("Updated value")
-        self.link.super_root.get("/TestValue").set_value(self.link.super_root.get("/TestValue").value + 1)
-        i = Timer(0.1, self.updateFakeValue, ())
-        i.start()
-
     def onOpen(self):
         self.logger.info("WebSocket Open")
         self.sendPingMsg()
-        self.updateFakeValue()
 
     def onClose(self, wasClean, code, reason):
         self.logger.info("WebSocket Closed")
