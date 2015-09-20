@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import json
+import logging
 from threading import Timer, Thread
 from urllib.parse import urlparse
 
@@ -39,9 +40,10 @@ class DSAWebSocket(WebSocketClientProtocol):
     def __init__(self):
         super().__init__()
         self.msg = 0
+        self.logger = logging.getLogger("DSLink")
 
     def sendPingMsg(self):
-        print("DEBUG Ping")
+        self.logger.debug("Sent ping")
         self.sendMessage({})
         i = Timer(30, self.sendPingMsg, ())
         i.start()
@@ -50,11 +52,11 @@ class DSAWebSocket(WebSocketClientProtocol):
         self.sendPingMsg()
 
     def onClose(self, wasClean, code, reason):
-        print("WebSocket was closed.")
+        self.logger.info("WebSocket Closed")
 
     def onMessage(self, payload, isBinary):
+        self.logger.debug("Received data: %s" % payload.decode("utf-8"))
         i = json.loads(payload.decode("utf-8"))
-        print("Recv:", i)
         m = {}
         ack = False
         if "requests" in i and len(i["requests"]) > 0:
@@ -81,6 +83,6 @@ class DSAWebSocket(WebSocketClientProtocol):
         payload["msg"] = self.msg
         self.msg += 1
         payload = json.dumps(payload)
-        print("Sent:", payload)
+        self.logger.debug("Sent data: %s" % payload)
         payload = payload.encode("utf-8")
         super().sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)

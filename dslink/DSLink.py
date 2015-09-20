@@ -1,17 +1,31 @@
+import base64
+import logging
+
 from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
 from dslink.Node import Node
 from dslink.WebSocket import WebSocket
-
-import base64
 
 
 class DSLink:
     super_root = Node("", None)
     super_root.add_child(Node("Create", super_root))
     super_root.add_child(Node("Delete", super_root))
+    super_root.get("/Create").set_value(11)
+    super_root.get("/Create").config["$type"] = "number"
 
     def __init__(self, config):
+        # Logger setup
+        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+        self.ch = logging.StreamHandler()
+        self.ch.setFormatter(formatter)
+        self.ch.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger("DSLink")
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.addHandler(self.ch)
+        self.logger.info("Starting DSLink...")
+
+        # DSLink setup
         self.config = config
         self.keypair = Keypair()
         self.handshake = Handshake(config.name, config.broker, self.keypair, config.responder, config.requester)

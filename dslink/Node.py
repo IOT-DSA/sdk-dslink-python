@@ -1,6 +1,10 @@
+from datetime import datetime
+
 class Node:
     def __init__(self, name, parent):
         self.parent = parent
+        self.value = None
+        self.updated_at = None
         self.children = {}
         self.config = {
             "$is": "node"
@@ -21,7 +25,11 @@ class Node:
                 self.path = ""
 
     def has_value(self):
-        return False
+        return self.value is not None
+
+    def set_value(self, value):
+        self.value = value
+        self.updated_at = datetime.now()
 
     def stream(self):
         out = []
@@ -32,7 +40,7 @@ class Node:
             if child.has_value():
                 val = {
                     "value": child.value,
-                    # TODO(logangorence) last updated timestamp
+                    "ts": child.updated_at.isoformat()
                 }
             else:
                 val = {}
