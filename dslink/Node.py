@@ -43,7 +43,7 @@ class Node:
 
     def set_value(self, value):
         # Set value and updated timestamp
-        if self.value.set_value(value):
+        if self.value.set_value(value) and self.link.active:
             # TODO(logangorence) Clean this up
             # Update any subscribers
             for s in self.subscribers:
@@ -88,16 +88,17 @@ class Node:
     def add_child(self, child):
         self.children[child.name] = child
 
-        for str in self.streams:
-            self.link.wsp.sendMessage({
-                "responses": [
-                    Response({
-                        "rid": str,
-                        "stream": "open",
-                        "updates": self.stream()
-                    }).get_stream()
-                ]
-            })
+        if self.link.active:
+            for str in self.streams:
+                self.link.wsp.sendMessage({
+                    "responses": [
+                        Response({
+                            "rid": str,
+                            "stream": "open",
+                            "updates": self.stream()
+                        }).get_stream()
+                    ]
+                })
 
     def get(self, path):
         if path == "/":
@@ -112,4 +113,4 @@ class Node:
                     child = path[1:]
                     return self.children[child]
             except KeyError:
-                self.logger.debug("Non-existent Node requested %s" % path)
+                self.logger.warn("Non-existent Node requested %s" % path)

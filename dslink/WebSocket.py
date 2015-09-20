@@ -33,7 +33,6 @@ class WebSocket:
         asyncio.set_event_loop(loop)
         self.factory = WebSocketClientFactory(self.websocket_uri)
         self.factory.protocol = DSAWebSocket
-        self.factory.ws = self
         coro = loop.create_connection(self.factory, host=self.url.hostname, port=self.url.port)
         loop.run_until_complete(coro)
         loop.run_forever()
@@ -55,10 +54,12 @@ class DSAWebSocket(WebSocketClientProtocol):
         i.start()
 
     def onOpen(self):
+        self.link.active = True
         self.logger.info("WebSocket Open")
         self.sendPingMsg()
 
     def onClose(self, wasClean, code, reason):
+        self.link.active = False
         self.logger.info("WebSocket Closed")
         # TODO(logangorence): Attempt reconnection
 

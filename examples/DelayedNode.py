@@ -1,20 +1,25 @@
+import random
 from time import sleep
 from threading import Timer
 
 from dslink.DSLink import DSLink, Configuration, Node
 
-link = DSLink(Configuration("python-test", "http://localhost:8080/conn", responder=True, requester=True))
 
-def updateFakeValue():
-    link.super_root.get("/TestValue").set_value(link.super_root.get("/TestValue").value.value + 1)
-    i = Timer(1, updateFakeValue, ())
-    i.start()
+class DelayedNodeDSLink(DSLink):
+    def __init__(self):
+        super().__init__(Configuration("python-delay", "http://localhost:8080/conn", responder=True, requester=True))
+        self.testValue = Node("TestValue", self.super_root)
+        self.super_root.add_child(self.testValue)
+        self.testValue.set_type("number")
+        self.testValue.set_value(1)
+        self.updateRandomValue()
+        sleep(5)
+        self.super_root.add_child(Node("DelayedNode", self.super_root))
 
-testValue = Node("TestValue", link.super_root)
-link.super_root.add_child(testValue)
-testValue.set_type("number")
-testValue.set_value(1)
-updateFakeValue()
+    def updateRandomValue(self):
+        self.testValue.set_value(random.randint(0, 1000))
+        i = Timer(1, self.updateRandomValue, ())
+        i.start()
 
-sleep(5)
-link.super_root.add_child(Node("DelayedNode", link.super_root))
+if __name__ == "__main__":
+    DelayedNodeDSLink()
