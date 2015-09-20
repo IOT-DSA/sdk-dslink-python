@@ -60,6 +60,7 @@ class DSAWebSocket(WebSocketClientProtocol):
 
     def onClose(self, wasClean, code, reason):
         self.logger.info("WebSocket Closed")
+        # TODO(logangorence): Attempt reconnection
 
     def onMessage(self, payload, isBinary):
         self.logger.debug("Received data: %s" % payload.decode("utf-8"))
