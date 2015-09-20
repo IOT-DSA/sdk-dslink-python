@@ -15,6 +15,7 @@ from dslink.Response import Response
 class WebSocket:
     def __init__(self, link):
         self.link = link
+        self.factory = None
         self.auth = bytes(link.salt, "utf-8") + link.shared_secret
         self.auth = base64.urlsafe_b64encode(hashlib.sha256(self.auth).digest()).decode("utf-8").replace("=", "")
 
@@ -22,15 +23,18 @@ class WebSocket:
         self.websocket_uri = link.config.broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + link.dsid + "&auth=" + self.auth
         self.url = urlparse(self.websocket_uri)
 
+        DSAWebSocket.link = link
+
         loop = asyncio.get_event_loop()
         t = Thread(target=self.start_ws, args=(loop,))
         t.start()
 
     def start_ws(self, loop):
         asyncio.set_event_loop(loop)
-        factory = WebSocketClientFactory(self.websocket_uri)
-        factory.protocol = DSAWebSocket
-        coro = loop.create_connection(factory, host=self.url.hostname, port=self.url.port)
+        self.factory = WebSocketClientFactory(self.websocket_uri)
+        self.factory.protocol = DSAWebSocket
+        self.factory.ws = self
+        coro = loop.create_connection(self.factory, host=self.url.hostname, port=self.url.port)
         loop.run_until_complete(coro)
         loop.run_forever()
         loop.close()
@@ -41,6 +45,8 @@ class DSAWebSocket(WebSocketClientProtocol):
         super().__init__()
         self.msg = 0
         self.logger = logging.getLogger("DSLink")
+        self.link = DSAWebSocket.link
+        self.link.wsp = self
 
     def sendPingMsg(self):
         self.logger.debug("Sent ping")
@@ -48,8 +54,16 @@ class DSAWebSocket(WebSocketClientProtocol):
         i = Timer(30, self.sendPingMsg, ())
         i.start()
 
+    def updateFakeValue(self):
+        self.logger.debug("Updated value")
+        self.link.super_root.get("/TestValue").set_value(self.link.super_root.get("/TestValue").value + 1)
+        i = Timer(0.1, self.updateFakeValue, ())
+        i.start()
+
     def onOpen(self):
+        self.logger.info("WebSocket Open")
         self.sendPingMsg()
+        self.updateFakeValue()
 
     def onClose(self, wasClean, code, reason):
         self.logger.info("WebSocket Closed")
@@ -72,7 +86,7 @@ class DSAWebSocket(WebSocketClientProtocol):
     def handleRequests(self, requests):
         i = []
         for request in requests:
-            i.append(Request(request).process().get_stream())
+            i.append(Request(request, self.link).process().get_stream())
         return i
 
     def handleResponse(self, responses):

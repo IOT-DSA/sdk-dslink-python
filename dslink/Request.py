@@ -1,13 +1,13 @@
 import logging
 
-import dslink
 from dslink.Response import Response
 
 
 class Request:
-    def __init__(self, request):
+    def __init__(self, request, link):
         self.logger = logging.getLogger("DSLink")
         self.request = request
+        self.link = link
         self.rid = request["rid"]
         self.method = request["method"]
 
@@ -17,18 +17,21 @@ class Request:
             return Response({
                 "rid": self.rid,
                 "stream": "open",
-                "updates": dslink.DSLink.DSLink.super_root.get(self.request["path"]).stream()
+                "updates": self.link.super_root.get(self.request["path"]).stream()
             })
         elif self.method == "subscribe":
-            # TODO(logangorence) Implement subscriptions
             self.logger.debug("Subscribe method")
+            for sub in self.request["paths"]:
+                self.link.subman.subscribe(self.link.super_root.get(sub["path"]), sub["sid"])
+                self.logger.debug("Subscription added")
             return Response({
                 "rid": self.rid,
                 "stream": "closed"
             })
         elif self.method == "unsubscribe":
-            # TODO(logangorence) Implement unsubscriptions
             self.logger.debug("Unsubscribe method")
+            for sid in self.request["sids"]:
+                self.link.subman.unsubscribe(sid)
             return Response({
                 "rid": self.rid,
                 "stream": "closed"

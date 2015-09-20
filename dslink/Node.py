@@ -1,7 +1,11 @@
 from datetime import datetime
+import logging
+
 
 class Node:
     def __init__(self, name, parent):
+        if parent is not None:
+            self.link = parent.link
         self.parent = parent
         self.value = None
         self.updated_at = None
@@ -10,6 +14,7 @@ class Node:
             "$is": "node"
         }
         self.attributes = {}
+        self.subscribers = []
         if parent is not None:
             self.name = name
             if parent.path.endswith("/"):
@@ -28,8 +33,27 @@ class Node:
         return self.value is not None
 
     def set_value(self, value):
+        # Set value and updated timestamp
         self.value = value
         self.updated_at = datetime.now()
+
+        # TODO(logangorence) Clean this up
+        # Update any subscribers
+        for s in self.subscribers:
+            self.link.wsp.sendMessage({
+                "responses": [
+                    {
+                        "rid": 0,
+                        "updates": [
+                            [
+                                s,
+                                value,
+                                self.updated_at.isoformat()
+                            ]
+                        ]
+                    }
+                ]
+            })
 
     def stream(self):
         out = []
