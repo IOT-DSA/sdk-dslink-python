@@ -1,9 +1,13 @@
+import logging
+
 from dslink.Response import Response
 from dslink.Value import Value
 
 
+# TODO(logangorence): Implement isSubscribed to check if there are any subscribers
 class Node:
     def __init__(self, name, parent):
+        self.logger = logging.getLogger("DSLink")
         if parent is not None:
             self.link = parent.link
         self.parent = parent
@@ -100,17 +104,12 @@ class Node:
             return self
         else:
             try:
-                i = path.index("/", 2)
-                child = path[1:i]
-                return self.children[child].get(path[i:])
-            except ValueError:
-                child = path[1:]
-                return self.children[child]
-
-    @staticmethod
-    def o_to_a(obj):
-        arr = []
-        for key in obj:
-            arr.append(key)
-            arr.append(obj[key])
-        return arr
+                try:
+                    i = path.index("/", 2)
+                    child = path[1:i]
+                    return self.children[child].get(path[i:])
+                except ValueError:
+                    child = path[1:]
+                    return self.children[child]
+            except KeyError:
+                self.logger.debug("Non-existent Node requested %s" % path)

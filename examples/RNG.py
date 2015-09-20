@@ -4,8 +4,10 @@ import random
 from dslink.DSLink import DSLink, Configuration, Node
 
 link = DSLink(Configuration("python-rng", "http://localhost:8080/conn", responder=True, requester=True))
+logger = link.create_logger("RNG")
 
 def updateRandomValue():
+    logger.info("Updating value")
     link.super_root.get("/TestValue").set_value(random.randint(0, 1000))
     i = Timer(1, updateRandomValue, ())
     i.start()

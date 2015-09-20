@@ -15,12 +15,18 @@ class Request:
         if self.method == "list":
             self.logger.debug("List method")
             node = self.link.super_root.get(self.request["path"])
-            self.link.strman.open_stream(node, self.rid)
-            return Response({
-                "rid": self.rid,
-                "stream": "open",
-                "updates": node.stream()
-            })
+            if node is not None:
+                self.link.strman.open_stream(node, self.rid)
+                return Response({
+                    "rid": self.rid,
+                    "stream": "open",
+                    "updates": node.stream()
+                })
+            else:
+                return Response({
+                    "rid": self.rid,
+                    "stream": "closed"
+                })
         elif self.method == "subscribe":
             self.logger.debug("Subscribe method")
             for sub in self.request["paths"]:

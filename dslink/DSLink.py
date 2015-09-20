@@ -14,14 +14,8 @@ class DSLink:
         self.super_root.link = self
 
         # Logger setup
-        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-        self.ch = logging.StreamHandler()
-        self.ch.setFormatter(formatter)
-        self.ch.setLevel(logging.DEBUG)
-        self.logger = logging.getLogger("DSLink")
-        self.logger.setLevel(logging.DEBUG)
-        self.logger.addHandler(self.ch)
-        self.logger.info("Starting DSLink...")
+        self.logger = self.create_logger("DSLink")
+        self.logger.info("Starting DSLink")
 
         # Subscription/stream setup
         self.subman = SubscriptionManager()
@@ -38,6 +32,18 @@ class DSLink:
 
         # Connection setup
         self.websocket = WebSocket(self)
+
+    @staticmethod
+    def create_logger(name):
+        # Logger setup
+        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+        ch = logging.StreamHandler()
+        ch.setFormatter(formatter)
+        ch.setLevel(logging.DEBUG)
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(ch)
+        return logger
 
     @staticmethod
     def add_padding(string):
@@ -71,7 +77,7 @@ class StreamManager:
         try:
             self.streams[rid].streams.remove(rid)
             self.streams[rid] = None
-        except:
+        except KeyError:
             logging.getLogger("DSLink").debug("Unknown rid %s" % rid)
 
 
