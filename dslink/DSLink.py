@@ -23,8 +23,9 @@ class DSLink:
         self.logger.addHandler(self.ch)
         self.logger.info("Starting DSLink...")
 
-        # Subscription setup
+        # Subscription/stream setup
         self.subman = SubscriptionManager()
+        self.strman = StreamManager()
 
         # DSLink setup
         self.config = config
@@ -56,6 +57,22 @@ class SubscriptionManager:
     def unsubscribe(self, sid):
         self.subscriptions[sid].subscribers.remove(sid)
         self.subscriptions[sid] = None
+
+
+class StreamManager:
+    def __init__(self):
+        self.streams = {}
+
+    def open_stream(self, node, rid):
+        self.streams[rid] = node
+        self.streams[rid].streams.append(rid)
+
+    def close_stream(self, rid):
+        try:
+            self.streams[rid].streams.remove(rid)
+            self.streams[rid] = None
+        except:
+            logging.getLogger("DSLink").debug("Unknown rid %s" % rid)
 
 
 class Configuration:

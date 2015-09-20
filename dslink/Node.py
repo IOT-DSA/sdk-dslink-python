@@ -1,3 +1,4 @@
+from dslink.Response import Response
 from dslink.Value import Value
 
 
@@ -13,6 +14,7 @@ class Node:
         }
         self.attributes = {}
         self.subscribers = []
+        self.streams = []
         if parent is not None:
             self.name = name
             if parent.path.endswith("/"):
@@ -81,6 +83,17 @@ class Node:
 
     def add_child(self, child):
         self.children[child.name] = child
+
+        for str in self.streams:
+            self.link.wsp.sendMessage({
+                "responses": [
+                    Response({
+                        "rid": str,
+                        "stream": "open",
+                        "updates": self.stream()
+                    }).get_stream()
+                ]
+            })
 
     def get(self, path):
         if path == "/":

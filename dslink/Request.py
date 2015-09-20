@@ -14,10 +14,12 @@ class Request:
     def process(self):
         if self.method == "list":
             self.logger.debug("List method")
+            node = self.link.super_root.get(self.request["path"])
+            self.link.strman.open_stream(node, self.rid)
             return Response({
                 "rid": self.rid,
                 "stream": "open",
-                "updates": self.link.super_root.get(self.request["path"]).stream()
+                "updates": node.stream()
             })
         elif self.method == "subscribe":
             self.logger.debug("Subscribe method")
@@ -43,8 +45,8 @@ class Request:
             # TODO(logangorence) Implement setting
             self.logger.debug("Set method")
         elif self.method == "close":
-            # TODO(logangorence) Implement proper closing
             self.logger.debug("Close method")
+            self.link.strman.close_stream(self.rid)
             return Response({
                 "rid": self.rid,
                 "stream": "closed"
