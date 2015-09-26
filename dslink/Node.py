@@ -6,6 +6,7 @@ from dslink.Value import Value
 
 class Node:
     """ Represents a Node on the Node structure. """
+
     def __init__(self, name, parent):
         """
         Node Constructor.
@@ -24,6 +25,7 @@ class Node:
         self.attributes = {}
         self.subscribers = []
         self.streams = []
+        self.invoke_callback = None
         if parent is not None:
             self.name = name
             if parent.path.endswith("/"):
@@ -157,3 +159,23 @@ class Node:
         :return: True if the Node is subscribed to.
         """
         return len(self.subscribers) is not 0
+
+    def invoke(self, params):
+        """
+        Invoke the Node.
+        :param params: Parameters of invoke.
+        :return: Columns and values
+        """
+        self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
+        # noinspection PyCallingNonCallable
+        return self.config["$columns"], self.invoke_callback(params)
+
+    def set_invoke_callback(self, callback):
+        """
+        Set the invoke callback.
+        :param callback: Callback to call on an invoke method.
+        """
+        if hasattr(callback, "__call__"):
+            self.invoke_callback = callback
+        else:
+            raise ValueError("Provided callback is not a function.")

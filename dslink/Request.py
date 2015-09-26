@@ -45,11 +45,21 @@ class Request:
                 "stream": "closed"
             })
         elif self.method == "invoke":
-            # TODO(logangorence) Implement invoking
             self.logger.debug("Invoke method")
+            columns, values = self.link.super_root.get(self.request["path"]).invoke(self.request["params"])
+            # TODO(logangorence) Implement streaming invokes
+            return Response({
+                "rid": self.rid,
+                "columns": columns,
+                "updates": values,
+                "stream": "closed"
+            })
         elif self.method == "set":
-            # TODO(logangorence) Implement setting
+            # TODO(logangorence) Implement set method
             self.logger.debug("Set method")
+        elif self.method == "remove":
+            # TODO(logangorence) Implement remove method
+            self.logger.debug("Remove method")
         elif self.method == "close":
             self.logger.debug("Close method")
             self.link.strman.close_stream(self.rid)

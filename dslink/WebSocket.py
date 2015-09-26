@@ -85,7 +85,7 @@ class DSAWebSocket(WebSocketClientProtocol):
             i.append(Request(request, self.link).process().get_stream())
         return i
 
-    def handleResponses(self, responses):
+    def handleResponse(self, responses):
         for response in responses:
             Response(response)
 

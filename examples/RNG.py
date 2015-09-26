@@ -7,14 +7,30 @@ from dslink.DSLink import DSLink, Configuration, Node
 class RNGDSLink(DSLink):
     def __init__(self):
         super().__init__(Configuration("python-rng", "http://localhost:8080/conn", responder=True, requester=True))
-        self.createRNG = Node("Create RNG", self.super_root)
-        self.createRNG.set_invokable(True)
+        self.createRNG = Node("createRNG", self.super_root)
+        self.createRNG.set_config("$name", "Create RNG")
+        self.createRNG.set_config("$result", "values")
+        self.createRNG.set_invokable("config")
+        self.createRNG.set_config("$columns", [
+            {
+                "name": "success",
+                "type": "bool"
+            }
+        ])
+        self.createRNG.set_invoke_callback(self.createCallback)
         self.super_root.add_child(self.createRNG)
         self.testValue = Node("TestValue", self.super_root)
         self.super_root.add_child(self.testValue)
         self.testValue.set_type("number")
         self.testValue.set_value(1)
         self.updateRandomValue()
+
+    def createCallback(self, params):
+        return [
+            [
+                True
+            ]
+        ]
 
     def updateRandomValue(self):
         if self.testValue.is_subscribed():

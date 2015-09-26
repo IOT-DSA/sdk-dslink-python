@@ -22,7 +22,7 @@ class Handshake:
             "publicKey": self.get_publickey(),
             "isRequester": self.requester,
             "isResponder": self.responder,
-            "version": "1.0.4"
+            "version": "1.1.1"
         })
 
     def run_handshake(self):
