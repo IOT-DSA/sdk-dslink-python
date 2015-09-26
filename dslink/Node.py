@@ -4,9 +4,14 @@ from dslink.Response import Response
 from dslink.Value import Value
 
 
-# TODO(logangorence): Implement isSubscribed to check if there are any subscribers
 class Node:
+    """ Represents a Node on the Node structure. """
     def __init__(self, name, parent):
+        """
+        Node Constructor.
+        :param name: Node name.
+        :param parent: Node parent.
+        """
         self.logger = logging.getLogger("DSLink")
         if parent is not None:
             self.link = parent.link
@@ -34,14 +39,26 @@ class Node:
                 self.path = ""
 
     def has_value(self):
+        """
+        Check if the Node has a value.
+        :return: True if the Node has a value.
+        """
         return self.value.type is not None
 
     def set_type(self, t):
+        """
+        Set the Node's value type.
+        :param t: Type to set.
+        """
         # TODO(logangorence) Check for valid type
         self.value.set_type(t)
         self.config["$type"] = t
 
     def set_value(self, value):
+        """
+        Set the Node's value.
+        :param value: Value to set.
+        """
         # Set value and updated timestamp
         if self.value.set_value(value) and self.link.active:
             # TODO(logangorence) Clean this up
@@ -62,7 +79,17 @@ class Node:
                     ]
                 })
 
+    def set_config(self, key, value):
+        self.config[key] = value
+
+    def set_invokable(self, invokable):
+        self.set_config("$invokable", invokable)
+
     def stream(self):
+        """
+        Stream the Node.
+        :return: Node stream.
+        """
         out = []
         for k in self.config:
             out.append([k, self.config[k]])
@@ -86,14 +113,18 @@ class Node:
         return out
 
     def add_child(self, child):
+        """
+        Add a child to this Node.
+        :param child: Child to add.
+        """
         self.children[child.name] = child
 
         if self.link.active:
-            for str in self.streams:
+            for stream in self.streams:
                 self.link.wsp.sendMessage({
                     "responses": [
                         Response({
-                            "rid": str,
+                            "rid": stream,
                             "stream": "open",
                             "updates": self.stream()
                         }).get_stream()
@@ -101,6 +132,11 @@ class Node:
                 })
 
     def get(self, path):
+        """
+        Get a Node from this position on the Node structure.
+        :param path: Path of Node wanted.
+        :return: Node of path.
+        """
         if path == "/":
             return self
         else:
@@ -114,3 +150,10 @@ class Node:
                     return self.children[child]
             except KeyError:
                 self.logger.warn("Non-existent Node requested %s" % path)
+
+    def is_subscribed(self):
+        """
+        Is the Node subscribed to?
+        :return: True if the Node is subscribed to.
+        """
+        return len(self.subscribers) is not 0

@@ -8,6 +8,10 @@ from dslink.WebSocket import WebSocket
 
 
 class DSLink:
+    """
+    Base DSLink class which creates the node structure,
+    subscription/stream manager, and connects to the broker.
+    """
     def __init__(self, config):
         # Temporary Node tree
         self.super_root = Node("", None)
@@ -31,6 +35,7 @@ class DSLink:
         self.shared_secret = self.keypair.keypair.get_ecdh_key(base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"])))
 
         # Connection setup
+        self.active = False
         self.websocket = WebSocket(self)
 
     @staticmethod
@@ -53,6 +58,7 @@ class DSLink:
 
 
 class SubscriptionManager:
+    """ Manages subscriptions to Nodes. """
     def __init__(self):
         self.subscriptions = {}
 
@@ -66,6 +72,7 @@ class SubscriptionManager:
 
 
 class StreamManager:
+    """ Manages streams for Nodes. """
     def __init__(self):
         self.streams = {}
 
@@ -82,6 +89,7 @@ class StreamManager:
 
 
 class Configuration:
+    """ Provides configuration to the DSLink. """
     def __init__(self, name, broker, responder=False, requester=False):
         self.name = name
         self.broker = broker

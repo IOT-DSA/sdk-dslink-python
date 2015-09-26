@@ -26,6 +26,7 @@ class Handshake:
         })
 
     def run_handshake(self):
+        # TODO(logangorence): Handle ConnectionRefusedError
         response = requests.post(self.broker + "?dsId=" + self.get_dsid(), data=self.get_json())
         # TODO(logangorence): Handle non-200 error responses and empty responses
         return json.loads(response.text)

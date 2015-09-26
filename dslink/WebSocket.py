@@ -13,6 +13,7 @@ from dslink.Response import Response
 
 
 class WebSocket:
+    """ Class to handle WebSocket  """
     def __init__(self, link):
         self.link = link
         self.factory = None
@@ -84,7 +85,7 @@ class DSAWebSocket(WebSocketClientProtocol):
             i.append(Request(request, self.link).process().get_stream())
         return i
 
-    def handleResponse(self, responses):
+    def handleResponses(self, responses):
         for response in responses:
             Response(response)
 

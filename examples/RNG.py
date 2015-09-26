@@ -7,6 +7,9 @@ from dslink.DSLink import DSLink, Configuration, Node
 class RNGDSLink(DSLink):
     def __init__(self):
         super().__init__(Configuration("python-rng", "http://localhost:8080/conn", responder=True, requester=True))
+        self.createRNG = Node("Create RNG", self.super_root)
+        self.createRNG.set_invokable(True)
+        self.super_root.add_child(self.createRNG)
         self.testValue = Node("TestValue", self.super_root)
         self.super_root.add_child(self.testValue)
         self.testValue.set_type("number")
@@ -14,7 +17,8 @@ class RNGDSLink(DSLink):
         self.updateRandomValue()
 
     def updateRandomValue(self):
-        self.testValue.set_value(random.randint(0, 1000))
+        if self.testValue.is_subscribed():
+            self.testValue.set_value(random.randint(0, 1000))
         i = Timer(1, self.updateRandomValue, ())
         i.start()
 
