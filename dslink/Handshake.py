@@ -8,7 +8,8 @@ class Handshake:
     Class that handles the DSA Handshake.
     """
 
-    def __init__(self, name, broker, keypair, responder=False, requester=False):
+    def __init__(self, link, name, broker, keypair, responder=False, requester=False):
+        self.link = link
         self.name = name
         self.broker = broker
         self.keypair = keypair
@@ -30,7 +31,8 @@ class Handshake:
         })
 
     def run_handshake(self):
-        # TODO(logangorence): Handle ConnectionRefusedError
         response = requests.post(self.broker + "?dsId=" + self.get_dsid(), data=self.get_json())
-        # TODO(logangorence): Handle non-200 error responses and empty responses
+        if response.status_code is not 200:
+            self.link.logger.error("Non-200 status code")
+            exit(1)
         return json.loads(response.text)

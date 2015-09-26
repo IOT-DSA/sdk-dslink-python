@@ -29,7 +29,7 @@ class DSLink:
         # DSLink setup
         self.config = config
         self.keypair = Keypair()
-        self.handshake = Handshake(config.name, config.broker, self.keypair, config.responder, config.requester)
+        self.handshake = Handshake(self, config.name, config.broker, self.keypair, config.responder, config.requester)
         self.server_config = self.handshake.run_handshake()
         self.salt = self.server_config["salt"]
         self.dsid = self.handshake.get_dsid()

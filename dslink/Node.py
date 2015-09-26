@@ -99,6 +99,7 @@ class Node:
 
     def set_config(self, key, value):
         self.config[key] = value
+        self.update_subscribers()
 
     def set_invokable(self, invokable):
         self.set_config("$invokable", invokable)
@@ -138,16 +139,7 @@ class Node:
         self.children[child.name] = child
 
         if self.standalone or self.link.active:
-            for stream in self.streams:
-                self.link.wsp.sendMessage({
-                    "responses": [
-                        Response({
-                            "rid": stream,
-                            "stream": "open",
-                            "updates": self.stream()
-                        }).get_stream()
-                    ]
-                })
+            self.update_subscribers()
 
     def get(self, path):
         """
@@ -195,3 +187,15 @@ class Node:
             self.invoke_callback = callback
         else:
             raise ValueError("Provided callback is not a function.")
+
+    def update_subscribers(self):
+        for stream in self.streams:
+            self.link.wsp.sendMessage({
+                "responses": [
+                    Response({
+                        "rid": stream,
+                        "stream": "open",
+                        "updates": self.stream()
+                    }).get_stream()
+                ]
+            })

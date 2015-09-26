@@ -16,6 +16,7 @@ class WebSocket:
     """
     Class to handle WebSocket.
     """
+
     def __init__(self, link):
         self.link = link
         self.factory = None
@@ -87,14 +88,14 @@ class DSAWebSocket(WebSocketClientProtocol):
             i.append(Request(request, self.link).process().get_stream())
         return i
 
-    def handleResponse(self, responses):
+    def handleResponses(self, responses):
         for response in responses:
             Response(response)
 
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
         payload["msg"] = self.msg
         self.msg += 1
-        payload = json.dumps(payload)
+        payload = json.dumps(payload, sort_keys=True)
         self.logger.debug("Sent data: %s" % payload)
         payload = payload.encode("utf-8")
         super().sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)

@@ -57,8 +57,16 @@ class Request:
                 "stream": "closed"
             })
         elif self.method == "set":
-            # TODO(logangorence) Implement set method
             self.logger.debug("Set method")
+            # TODO(logangorence) Handle permit
+            node = self.link.super_root.get(self.request["path"])
+            if node is not None:
+                # TODO(logangorence) Handle improper value type
+                node.set_value(self.request["value"])
+            return Response({
+                "rid": self.rid,
+                "stream": "closed"
+            })
         elif self.method == "remove":
             # TODO(logangorence) Implement remove method
             self.logger.debug("Remove method")

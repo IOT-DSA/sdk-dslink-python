@@ -35,7 +35,7 @@ class RNGDSLink(DSLink):
     def updateRandomValue(self):
         if self.testValue.is_subscribed():
             self.testValue.set_value(random.randint(0, 1000))
-        i = Timer(1, self.updateRandomValue, ())
+        i = Timer(0.001, self.updateRandomValue, ())
         i.start()
 
 if __name__ == "__main__":
