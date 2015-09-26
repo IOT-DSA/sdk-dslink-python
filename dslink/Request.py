@@ -30,8 +30,10 @@ class Request:
         elif self.method == "subscribe":
             self.logger.debug("Subscribe method")
             for sub in self.request["paths"]:
-                self.link.subman.subscribe(self.link.super_root.get(sub["path"]), sub["sid"])
-                self.logger.debug("Subscription added")
+                node = self.link.super_root.get(sub["path"])
+                if node is not None:
+                    self.link.subman.subscribe(node, sub["sid"])
+                    self.logger.debug("Subscription added")
             return Response({
                 "rid": self.rid,
                 "stream": "closed"
