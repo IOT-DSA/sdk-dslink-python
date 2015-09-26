@@ -7,16 +7,18 @@ from dslink.Value import Value
 class Node:
     """ Represents a Node on the Node structure. """
 
-    def __init__(self, name, parent):
+    def __init__(self, name, parent, standalone=False):
         """
         Node Constructor.
         :param name: Node name.
         :param parent: Node parent.
+        :param standalone: Standalone Node structure.
         """
         self.logger = logging.getLogger("DSLink")
         if parent is not None:
             self.link = parent.link
         self.parent = parent
+        self.standalone = standalone
         self.value = Value()
         self.children = {}
         self.config = {
@@ -47,6 +49,13 @@ class Node:
         """
         return self.value.type is not None
 
+    def get_type(self):
+        """
+        Get the Node's value type.
+        :return: Value type.
+        """
+        return self.config["$type"]
+
     def set_type(self, t):
         """
         Set the Node's value type.
@@ -56,13 +65,20 @@ class Node:
         self.value.set_type(t)
         self.config["$type"] = t
 
+    def get_value(self):
+        """
+        Get the Node's value.
+        :return: Node value.
+        """
+        return self.value.value
+
     def set_value(self, value):
         """
         Set the Node's value.
         :param value: Value to set.
         """
         # Set value and updated timestamp
-        if self.value.set_value(value) and self.link.active:
+        if self.value.set_value(value) and (not self.standalone or self.link.active):
             # TODO(logangorence) Clean this up
             # Update any subscribers
             for s in self.subscribers:
@@ -121,7 +137,7 @@ class Node:
         """
         self.children[child.name] = child
 
-        if self.link.active:
+        if self.standalone or self.link.active:
             for stream in self.streams:
                 self.link.wsp.sendMessage({
                     "responses": [

@@ -4,6 +4,10 @@ import requests
 
 
 class Handshake:
+    """
+    Class that handles the DSA Handshake.
+    """
+
     def __init__(self, name, broker, keypair, responder=False, requester=False):
         self.name = name
         self.broker = broker
