@@ -70,6 +70,8 @@ class Node:
         Get the Node's value.
         :return: Node value.
         """
+        if self.value.type is "enum":
+            return Value.build_enum(self.value.value)
         return self.value.value
 
     def set_value(self, value):
@@ -96,6 +98,14 @@ class Node:
                         }
                     ]
                 })
+
+    def get_config(self, key):
+        """
+        Get a config value.
+        :param key: Key of config.
+        :return: Value of config.
+        """
+        return self.config[key]
 
     def set_config(self, key, value):
         """

@@ -42,6 +42,11 @@ class DSLink:
 
     @staticmethod
     def create_logger(name):
+        """
+        Create a logger with the specified name.
+        :param name: Logger name.
+        :return: Logger instance.
+        """
         # Logger setup
         formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
         ch = logging.StreamHandler()
@@ -54,13 +59,20 @@ class DSLink:
 
     @staticmethod
     def add_padding(string):
+        """
+        Add padding to a URL safe base64 string.
+        :param string:
+        :return:
+        """
         while len(string) % 4 != 0:
             string += "="
         return string
 
 
 class SubscriptionManager:
-    """ Manages subscriptions to Nodes. """
+    """
+    Manages subscriptions to Nodes.
+    """
 
     def __init__(self):
         self.subscriptions = {}
@@ -75,7 +87,9 @@ class SubscriptionManager:
 
 
 class StreamManager:
-    """ Manages streams for Nodes. """
+    """
+    Manages streams for Nodes.
+    """
 
     def __init__(self):
         self.streams = {}
@@ -93,7 +107,9 @@ class StreamManager:
 
 
 class Configuration:
-    """ Provides configuration to the DSLink. """
+    """
+    Provides configuration to the DSLink.
+    """
 
     def __init__(self, name, broker, responder=False, requester=False):
         self.name = name

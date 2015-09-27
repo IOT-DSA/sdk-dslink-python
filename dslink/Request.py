@@ -4,6 +4,10 @@ from dslink.Response import Response
 
 
 class Request:
+    """
+    Class that handles incoming requests.
+    """
+
     def __init__(self, request, link):
         self.logger = logging.getLogger("DSLink")
         self.request = request
@@ -12,6 +16,10 @@ class Request:
         self.method = request["method"]
 
     def process(self):
+        """
+        Process the request.
+        :return: Response adequate the the request.
+        """
         if self.method == "list":
             self.logger.debug("List method")
             node = self.link.super_root.get(self.request["path"])
@@ -77,3 +85,5 @@ class Request:
                 "rid": self.rid,
                 "stream": "closed"
             })
+        else:
+            raise NotImplementedError("Method %s is not implemented" % self.method)

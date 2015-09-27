@@ -7,7 +7,15 @@ import pyelliptic
 
 
 class Keypair:
+    """
+    Class to handle keypair generation, loading, and saving.
+    """
+
     def __init__(self):
+        """
+        Keypair Constructor.
+        :return:
+        """
         self.keypair = None
         if not os.path.isfile(".keys"):
             self.generate_key()
@@ -19,9 +27,15 @@ class Keypair:
         self.encoded_public = base64.urlsafe_b64encode(self.keypair.get_pubkey()).decode("utf-8").replace("=", "")
 
     def generate_key(self):
+        """
+        Generate a key.
+        """
         self.keypair = pyelliptic.ECC(curve="prime256v1")
 
     def load_keys(self):
+        """
+        Load the keys from a file.
+        """
         file = open(".keys", "rb")
         keys = pickle.load(file)
         self.keypair = pyelliptic.ECC(curve="prime256v1",
@@ -30,6 +44,9 @@ class Keypair:
                                       raw_privkey=keys["privkey"])
 
     def save_keys(self):
+        """
+        Save the keys to a file.
+        """
         file = open(".keys", "wb")
         pickle.dump({
             "pubkey_x": self.keypair.pubkey_x,

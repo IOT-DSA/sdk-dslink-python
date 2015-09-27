@@ -27,4 +27,14 @@ class Value:
         elif self.type == "int":
             return type(value) == int
         elif self.type == "bool":
+            # TODO(logangorence) Implement enum-like bool.
             return type(value) == bool
+        elif self.type == "enum":
+            return type(value) == list
+
+    @staticmethod
+    def build_enum(values):
+        if type(values) == list:
+            return "enum[" + ",".join(values) + "]"
+        else:
+            raise KeyError("build_enum called with non-list parameter.")
