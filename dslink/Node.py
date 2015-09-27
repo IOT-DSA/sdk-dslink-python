@@ -98,10 +98,19 @@ class Node:
                 })
 
     def set_config(self, key, value):
+        """
+        Set a config value.
+        :param key: Key of config.
+        :param value: Value of config.
+        """
         self.config[key] = value
         self.update_subscribers()
 
     def set_invokable(self, invokable):
+        """
+        Set invokable state.
+        :param invokable: Invokable permit.
+        """
         self.set_config("$invokable", invokable)
 
     def stream(self):
@@ -189,6 +198,9 @@ class Node:
             raise ValueError("Provided callback is not a function.")
 
     def update_subscribers(self):
+        """
+        Send subscription updates.
+        """
         for stream in self.streams:
             self.link.wsp.sendMessage({
                 "responses": [

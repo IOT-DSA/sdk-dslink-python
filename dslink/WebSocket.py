@@ -18,6 +18,10 @@ class WebSocket:
     """
 
     def __init__(self, link):
+        """
+        WebSocket Constructor.
+        :param link: DSLink instance.
+        """
         self.link = link
         self.factory = None
         self.auth = bytes(link.salt, "utf-8") + link.shared_secret
@@ -34,6 +38,10 @@ class WebSocket:
         t.start()
 
     def start_ws(self, loop):
+        """
+        Start the WebSocket in a separate thread.
+        :param loop: asyncio loop
+        """
         asyncio.set_event_loop(loop)
         self.factory = WebSocketClientFactory(self.websocket_uri)
         self.factory.protocol = DSAWebSocket
@@ -44,6 +52,10 @@ class WebSocket:
 
 
 class DSAWebSocket(WebSocketClientProtocol):
+    """
+    Autobahn implementation for DSA communications.
+    """
+
     def __init__(self):
         super().__init__()
         self.msg = 0
@@ -52,22 +64,34 @@ class DSAWebSocket(WebSocketClientProtocol):
         self.link.wsp = self
 
     def sendPingMsg(self):
+        """
+        Send a blank object for a ping.
+        """
         self.logger.debug("Sent ping")
         self.sendMessage({})
         i = Timer(30, self.sendPingMsg, ())
         i.start()
 
     def onOpen(self):
+        """
+        WebSocket open event.
+        """
         self.link.active = True
         self.logger.info("WebSocket Open")
         self.sendPingMsg()
 
     def onClose(self, wasClean, code, reason):
+        """
+        WebSocket close event.
+        """
         self.link.active = False
         self.logger.info("WebSocket Closed")
         # TODO(logangorence): Attempt reconnection
 
     def onMessage(self, payload, isBinary):
+        """
+        WebSocket message event.
+        """
         self.logger.debug("Received data: %s" % payload.decode("utf-8"))
         i = json.loads(payload.decode("utf-8"))
         m = {}
@@ -83,16 +107,26 @@ class DSAWebSocket(WebSocketClientProtocol):
             self.sendMessage(m)
 
     def handleRequests(self, requests):
+        """
+        Handle DSA requests.
+        """
         i = []
         for request in requests:
             i.append(Request(request, self.link).process().get_stream())
         return i
 
     def handleResponses(self, responses):
+        """
+        Handle DSA responses.
+        """
         for response in responses:
             Response(response)
 
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
+        """
+        Send a message over the WebSocket.
+        :param payload:
+        """
         payload["msg"] = self.msg
         self.msg += 1
         payload = json.dumps(payload, sort_keys=True)

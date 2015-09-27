@@ -4,3 +4,5 @@
 build/
 dist/
 dslink.egg-info/
+__pycache__
+*.pyc

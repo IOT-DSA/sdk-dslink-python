@@ -11,9 +11,9 @@ class RNGDSLink(DSLink):
         self.createRNG.set_config("$name", "Create RNG")
         self.createRNG.set_config("$result", "values")
         self.createRNG.set_invokable("config")
-        self.createRNG.set_config("$columns", [
+        self.createRNG.set_config("$params", [
             {
-                "name": "success",
+                "name": "enabled",
                 "type": "bool"
             }
         ])
@@ -26,6 +26,7 @@ class RNGDSLink(DSLink):
         self.updateRandomValue()
 
     def createCallback(self, params):
+        self.logger.debug(params)
         return [
             [
                 True
@@ -35,7 +36,7 @@ class RNGDSLink(DSLink):
     def updateRandomValue(self):
         if self.testValue.is_subscribed():
             self.testValue.set_value(random.randint(0, 1000))
-        i = Timer(0.001, self.updateRandomValue, ())
+        i = Timer(1, self.updateRandomValue, ())
         i.start()
 
 if __name__ == "__main__":
