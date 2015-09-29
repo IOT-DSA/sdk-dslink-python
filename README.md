@@ -5,9 +5,17 @@ DSLink SDK for Python.
 **This DSLink SDK isn't finished yet.**
 
 ## Using the SDK
-Currently we are not publishing to the Python Package Index, so you will need to install the package from source. To write a DSLink, you need to use Python 3.
+Currently we are not publishing to the Python Package Index, so you will need to install the package from source. To write a DSLink, you need to use Python 3. **Use Python 3 to run setup.py.**
 
-1. Clone this repository
+### Windows
+
+1. Clone this repository.
+2. Install OpenSSL from https://slproweb.com/products/Win32OpenSSL.html.
+3. ```python setup.py install```
+
+### Linux
+
+1. Clone this repository.
 2. ```sudo python setup.py install```
 
 ## Running the examples
