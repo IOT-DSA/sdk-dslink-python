@@ -1,3 +1,4 @@
+import argparse
 import base64
 import logging
 
@@ -14,12 +15,15 @@ class DSLink:
     """
 
     def __init__(self, config):
+        # DSLink Configuration
+        self.config = config
+
         # Temporary Node tree
         self.super_root = Node("", None)
         self.super_root.link = self
 
         # Logger setup
-        self.logger = self.create_logger("DSLink")
+        self.logger = self.create_logger("DSLink", self.config.log_level)
         self.logger.info("Starting DSLink")
 
         # Subscription/stream setup
@@ -27,7 +31,6 @@ class DSLink:
         self.strman = StreamManager()
 
         # DSLink setup
-        self.config = config
         self.keypair = Keypair()
         self.handshake = Handshake(self, config.name, config.broker, self.keypair, config.responder, config.requester)
         self.server_config = self.handshake.run_handshake()
@@ -40,20 +43,23 @@ class DSLink:
         self.active = False
         self.websocket = WebSocket(self)
 
+        self.logger.info("Started DSLink")
+
     @staticmethod
-    def create_logger(name):
+    def create_logger(name, log_level=logging.INFO):
         """
         Create a logger with the specified name.
         :param name: Logger name.
+        :param log_level: Output Logger level.
         :return: Logger instance.
         """
         # Logger setup
         formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
         ch = logging.StreamHandler()
         ch.setFormatter(formatter)
-        ch.setLevel(logging.DEBUG)
+        ch.setLevel(log_level)
         logger = logging.getLogger(name)
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(log_level)
         logger.addHandler(ch)
         return logger
 
@@ -111,8 +117,20 @@ class Configuration:
     Provides configuration to the DSLink.
     """
 
-    def __init__(self, name, broker, responder=False, requester=False):
+    def __init__(self, name, responder, requester):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--broker", default="http://localhost:8080/conn")
+        parser.add_argument("--log", default="info")
+        args = parser.parse_args()
         self.name = name
-        self.broker = broker
+        self.broker = args.broker
+        self.log_level = args.log.lower()
         self.responder = responder
         self.requester = requester
+
+        if self.log_level == "info":
+            self.log_level = logging.INFO
+        elif self.log_level == "warning":
+            self.log_level = logging.WARNING
+        elif self.log_level == "debug":
+            self.log_level = logging.DEBUG

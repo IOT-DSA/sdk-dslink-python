@@ -77,7 +77,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         WebSocket open event.
         """
         self.link.active = True
-        self.logger.info("WebSocket Open")
+        self.logger.info("WebSocket Connection Established")
         self.sendPingMsg()
 
     def onClose(self, wasClean, code, reason):
@@ -85,7 +85,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         WebSocket close event.
         """
         self.link.active = False
-        self.logger.info("WebSocket Closed")
+        self.logger.info("WebSocket Connection Lost")
         # TODO(logangorence): Attempt reconnection
 
     def onMessage(self, payload, isBinary):

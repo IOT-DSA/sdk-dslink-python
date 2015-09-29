@@ -7,7 +7,7 @@ from dslink.DSLink import DSLink, Configuration, Node
 
 class DelayedNodeDSLink(DSLink):
     def __init__(self):
-        super().__init__(Configuration("python-delay", "http://localhost:8080/conn", responder=True, requester=True))
+        super().__init__(Configuration("python-delay", responder=True, requester=True))
         self.testValue = Node("TestValue", self.super_root)
         self.super_root.add_child(self.testValue)
         self.testValue.set_type("number")

@@ -6,7 +6,7 @@ from dslink.DSLink import DSLink, Configuration, Node
 
 class RNGDSLink(DSLink):
     def __init__(self):
-        super().__init__(Configuration("python-rng", "http://localhost:8080/conn", responder=True, requester=True))
+        super().__init__(Configuration("python-rng", responder=True, requester=True))
         self.createRNG = Node("createRNG", self.super_root)
         self.createRNG.set_config("$name", "Create RNG")
         self.createRNG.set_config("$result", "values")
