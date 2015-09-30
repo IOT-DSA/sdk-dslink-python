@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 
 from dslink.Response import Response
@@ -21,10 +22,8 @@ class Node:
         self.standalone = standalone
         self.value = Value()
         self.children = {}
-        self.config = {
-            "$is": "node"
-        }
-        self.attributes = {}
+        self.config = OrderedDict([("$is", "node")])
+        self.attributes = OrderedDict()
         self.subscribers = []
         self.streams = []
         self.invoke_callback = None
@@ -195,7 +194,7 @@ class Node:
         """
         self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         # noinspection PyCallingNonCallable
-        return self.config["$columns"], self.invoke_callback(params)
+        return (self.config["$columns"] if "$columns" in self.config else []), self.invoke_callback(params)
 
     def set_invoke_callback(self, callback):
         """

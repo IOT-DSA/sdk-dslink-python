@@ -28,7 +28,7 @@ class Handshake:
             "isRequester": self.requester,
             "isResponder": self.responder,
             "version": "1.1.1"
-        })
+        }, sort_keys=True)
 
     def run_handshake(self):
         response = requests.post(self.broker + "?dsId=" + self.get_dsid(), data=self.get_json())

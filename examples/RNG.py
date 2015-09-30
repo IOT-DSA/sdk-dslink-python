@@ -17,6 +17,12 @@ class RNGDSLink(DSLink):
                 "type": "bool"
             }
         ])
+        self.createRNG.set_config("$columns", [
+            {
+                "name": "test",
+                "type": "bool"
+            }
+        ])
         self.createRNG.set_invoke_callback(self.createCallback)
         self.super_root.add_child(self.createRNG)
         self.testValue = Node("TestValue", self.super_root)
@@ -26,7 +32,6 @@ class RNGDSLink(DSLink):
         self.updateRandomValue()
 
     def createCallback(self, params):
-        self.logger.debug(params)
         return [
             [
                 True
