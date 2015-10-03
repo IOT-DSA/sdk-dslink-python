@@ -2,7 +2,7 @@
 
 DSLink SDK for Python.
 
-**This DSLink SDK isn't finished yet.**
+**This DSLink SDK isn't finished yet. Responder features are usable, but not stable yet. Requester features are not implemented.**
 
 ## Using the SDK
 Currently we are not publishing to the Python Package Index, so you will need to install the package from source. To write a DSLink, you need to use Python 3. **Use Python 3 to run setup.py.**
