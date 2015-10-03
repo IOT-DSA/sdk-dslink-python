@@ -88,8 +88,11 @@ class SubscriptionManager:
         self.subscriptions[sid].subscribers.append(sid)
 
     def unsubscribe(self, sid):
-        self.subscriptions[sid].subscribers.remove(sid)
-        self.subscriptions[sid] = None
+        try:
+            self.subscriptions[sid].subscribers.remove(sid)
+            self.subscriptions[sid] = None
+        except KeyError:
+            logging.getLogger("DSlink").debug("Unknown sid %s" % sid)
 
 
 class StreamManager:
@@ -117,7 +120,7 @@ class Configuration:
     Provides configuration to the DSLink.
     """
 
-    def __init__(self, name, responder, requester):
+    def __init__(self, name, responder, requester, ping_time=30):
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")
@@ -127,6 +130,7 @@ class Configuration:
         self.log_level = args.log.lower()
         self.responder = responder
         self.requester = requester
+        self.ping_time = ping_time
 
         if self.log_level == "info":
             self.log_level = logging.INFO

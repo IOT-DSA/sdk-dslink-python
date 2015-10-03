@@ -119,8 +119,34 @@ class Node:
         """
         Set invokable state.
         :param invokable: Invokable permit.
+        :return: True on success.
         """
-        self.set_config("$invokable", invokable)
+        if type(invokable) is str:
+            self.set_config("$invokable", invokable)
+            return True
+        return False
+
+    def set_parameters(self, parameters):
+        """
+        Set parameters for action.
+        :param params: Parameters for action.
+        :return: True on success.
+        """
+        if type(parameters) is list:
+            self.set_config("$params", parameters)
+            return True
+        return False
+
+    def set_columns(self, columns):
+        """
+        Set return columns for action.
+        :param columns: Columns for action.
+        :return: True on success.
+        """
+        if type(columns) is list:
+            self.set_config("$columns", columns)
+            return True
+        return False
 
     def stream(self):
         """

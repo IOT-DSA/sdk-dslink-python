@@ -7,41 +7,49 @@ from dslink.DSLink import DSLink, Configuration, Node
 class RNGDSLink(DSLink):
     def __init__(self):
         super().__init__(Configuration("python-rng", responder=True, requester=True))
+        self.rngs = []
         self.createRNG = Node("createRNG", self.super_root)
         self.createRNG.set_config("$name", "Create RNG")
-        self.createRNG.set_config("$result", "values")
         self.createRNG.set_invokable("config")
-        self.createRNG.set_config("$params", [
+        self.createRNG.set_parameters([
             {
-                "name": "enabled",
-                "type": "bool"
+                "name": "Name",
+                "type": "string"
             }
         ])
-        self.createRNG.set_config("$columns", [
+        self.createRNG.set_columns([
             {
-                "name": "test",
+                "name": "Success",
                 "type": "bool"
             }
         ])
         self.createRNG.set_invoke_callback(self.createCallback)
         self.super_root.add_child(self.createRNG)
-        self.testValue = Node("TestValue", self.super_root)
-        self.super_root.add_child(self.testValue)
-        self.testValue.set_type("number")
-        self.testValue.set_value(1)
-        self.updateRandomValue()
+        self.update_rng()
 
     def createCallback(self, params):
+        if self.super_root.get("/%s" % params["Name"]) is None:
+            rng = Node(params["Name"], self.super_root)
+            rng.set_type("number")
+            rng.set_value(1)
+            self.super_root.add_child(rng)
+            self.rngs.append(rng)
+            return [
+                [
+                    True
+                ]
+            ]
         return [
             [
-                True
+                False
             ]
         ]
 
-    def updateRandomValue(self):
-        if self.testValue.is_subscribed():
-            self.testValue.set_value(random.randint(0, 1000))
-        i = Timer(1, self.updateRandomValue, ())
+    def update_rng(self):
+        for rng in self.rngs:
+            if rng.is_subscribed():
+                rng.set_value(random.randint(0, 1000))
+        i = Timer(1, self.update_rng, ())
         i.start()
 
 if __name__ == "__main__":

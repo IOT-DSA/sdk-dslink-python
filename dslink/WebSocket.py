@@ -69,7 +69,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         self.logger.debug("Sent ping")
         self.sendMessage({})
-        i = Timer(30, self.sendPingMsg, ())
+        i = Timer(self.link.config.ping_time, self.sendPingMsg, ())
         i.start()
 
     def onOpen(self):
