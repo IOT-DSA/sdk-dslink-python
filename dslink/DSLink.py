@@ -120,7 +120,14 @@ class Configuration:
     Provides configuration to the DSLink.
     """
 
-    def __init__(self, name, responder, requester, ping_time=30):
+    def __init__(self, name, responder=False, requester=False, ping_time=30):
+        """
+        Object that contains configuration for the DSLink.
+        :param name: DSLink name.
+        :param responder: True if acts as responder.
+        :param requester: True if acts as requester.
+        :param ping_time: Time between pings, default is 30.
+        """
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")
@@ -132,9 +139,15 @@ class Configuration:
         self.requester = requester
         self.ping_time = ping_time
 
-        if self.log_level == "info":
-            self.log_level = logging.INFO
+        if self.log_level == "critical":
+            self.log_level = logging.CRITICAL
+        elif self.log_level == "error":
+            self.log_level = logging.ERROR
         elif self.log_level == "warning":
             self.log_level = logging.WARNING
+        elif self.log_level == "info":
+            self.log_level = logging.INFO
         elif self.log_level == "debug":
             self.log_level = logging.DEBUG
+        elif self.log_level == "none":
+            self.log_level = logging.NOTSET
