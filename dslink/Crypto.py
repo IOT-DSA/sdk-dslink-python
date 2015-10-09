@@ -14,7 +14,6 @@ class Keypair:
     def __init__(self):
         """
         Keypair Constructor.
-        :return:
         """
         self.keypair = None
         if not os.path.isfile(".keys"):

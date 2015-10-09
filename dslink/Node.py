@@ -185,6 +185,13 @@ class Node:
         if self.standalone or self.link.active:
             self.update_subscribers()
 
+    def remove_child(self, name):
+        """
+        Remove a child from this Node.
+        :param name: Child Node name.
+        """
+        del self.children[name]
+
     def get(self, path):
         """
         Get a Node from this position on the Node structure.

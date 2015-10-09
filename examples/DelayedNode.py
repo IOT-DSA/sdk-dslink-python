@@ -13,9 +13,11 @@ class DelayedNodeDSLink(DSLink):
         self.testValue.set_type("number")
         self.testValue.set_value(1)
         self.super_root.add_child(Node("DelayedNode", self.super_root))
-        while True:
-            sleep(0.001)
-            self.updateRandomValue()
+        # while True:
+        # sleep(0.001)
+        # self.updateRandomValue()
+        sleep(5)
+        self.list("/")
 
     def updateRandomValue(self):
         self.testValue.set_value(self.testValue.value.value + 1)

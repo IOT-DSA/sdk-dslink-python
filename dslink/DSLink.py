@@ -5,6 +5,7 @@ import logging
 from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
 from dslink.Node import Node
+from dslink.Request import Request
 from dslink.WebSocket import WebSocket
 
 
@@ -41,9 +42,55 @@ class DSLink:
 
         # Connection setup
         self.active = False
+        self.rid = 1
+        self.wsp = None
         self.websocket = WebSocket(self)
 
         self.logger.info("Started DSLink")
+
+    def get_next_rid(self):
+        r = self.rid
+        self.rid += 1
+        return r
+
+    def list(self, path):
+        """
+        List a remote node.
+        :param path: Request path.
+        """
+        self.wsp.sendMessage({
+            "requests": [
+                {
+                    "rid": self.get_next_rid(),
+                    "method": "list",
+                    "path": path
+                }
+            ]
+        }, self)
+        # TODO(logangorence) Track response.
+
+    def invoke(self, path, permit=None, params=None):
+        """
+        Invoke a remote method.
+        :param path: Path of node.
+        :param permit: Maximum permission of invoke.
+        :param params: Parameters of invoke.
+        """
+        i = {
+            "rid": self.get_next_rid(),
+            "method": "invoke",
+            "path": path
+        }
+        if permit is not None:
+            i["permit"] = permit
+        if params is not None:
+            i["params"] = params
+        self.wsp.sendMessage({
+            "requests": [
+                i
+            ]
+        })
+        # TODO(logangorence) Track response.
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):
@@ -90,7 +137,7 @@ class SubscriptionManager:
     def unsubscribe(self, sid):
         try:
             self.subscriptions[sid].subscribers.remove(sid)
-            self.subscriptions[sid] = None
+            del self.subscriptions[sid]
         except KeyError:
             logging.getLogger("DSlink").debug("Unknown sid %s" % sid)
 
@@ -110,7 +157,7 @@ class StreamManager:
     def close_stream(self, rid):
         try:
             self.streams[rid].streams.remove(rid)
-            self.streams[rid] = None
+            del self.streams[rid]
         except KeyError:
             logging.getLogger("DSLink").debug("Unknown rid %s" % rid)
 
