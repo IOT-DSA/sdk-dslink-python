@@ -66,6 +66,8 @@ class DSLink:
         List a remote node.
         :param path: Request path.
         """
+        if not self.config.requester:
+            raise ValueError("Requester is not enabled.")
         rid = self.get_next_rid()
         self.wsp.sendMessage({
             "requests": [
@@ -86,8 +88,11 @@ class DSLink:
         :param params: Parameters of invoke.
         :param callback: Response callback.
         """
+        if not self.config.requester:
+            raise ValueError("Requester is not enabled.")
+        rid = self.get_next_rid()
         i = {
-            "rid": self.get_next_rid(),
+            "rid": rid,
             "method": "invoke",
             "path": path
         }
@@ -100,6 +105,8 @@ class DSLink:
                 i
             ]
         })
+        if callback:
+            self.reqman.start_request(rid, callback)
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):
@@ -137,13 +144,25 @@ class SubscriptionManager:
     """
 
     def __init__(self):
+        """
+        Constructor of SubscriptionManager.
+        """
         self.subscriptions = {}
 
     def subscribe(self, node, sid):
+        """
+        Store a Subscription to a Node.
+        :param node: Node to subscribe to.
+        :param sid: SID of Subscription.
+        """
         self.subscriptions[sid] = node
         self.subscriptions[sid].subscribers.append(sid)
 
     def unsubscribe(self, sid):
+        """
+        Remove a Subscription to a Node.
+        :param sid: SID of Subscription.
+        """
         try:
             self.subscriptions[sid].subscribers.remove(sid)
             del self.subscriptions[sid]
@@ -157,13 +176,25 @@ class StreamManager:
     """
 
     def __init__(self):
+        """
+        Constructor of StreamManager.
+        """
         self.streams = {}
 
     def open_stream(self, node, rid):
+        """
+        Open a Stream.
+        :param node: Node to handle streaming.
+        :param rid: RID of Stream.
+        """
         self.streams[rid] = node
         self.streams[rid].streams.append(rid)
 
     def close_stream(self, rid):
+        """
+        Close a Stream.
+        :param rid: RID of Stream.
+        """
         try:
             self.streams[rid].streams.remove(rid)
             del self.streams[rid]
@@ -177,15 +208,32 @@ class RequestManager:
     """
 
     def __init__(self):
+        """
+        Constructor of RequestManager.
+        """
         self.requests = {}
 
     def start_request(self, rid, callback):
+        """
+        Start a Request.
+        :param rid: RID of Request.
+        :param callback: Callback to invoke.
+        """
         self.requests[rid] = callback
 
     def stop_request(self, rid):
+        """
+        Stop a Request.
+        :param rid: RID of Request.
+        """
         del self.requests[rid]
 
     def invoke_request(self, rid, data):
+        """
+        Invoke a Request.
+        :param rid: RID of Request.
+        :param data: Data of Request.
+        """
         self.requests[rid](data)
 
 

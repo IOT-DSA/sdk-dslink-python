@@ -57,6 +57,9 @@ class DSAWebSocket(WebSocketClientProtocol):
     """
 
     def __init__(self):
+        """
+        Constructor for DSAWebSocket.
+        """
         super().__init__()
         self.msg = 0
         self.logger = logging.getLogger("DSLink")
@@ -85,6 +88,9 @@ class DSAWebSocket(WebSocketClientProtocol):
     def onClose(self, wasClean, code, reason):
         """
         WebSocket close event.
+        :param wasClean: True if the close was clean.
+        :param code: Close code.
+        :param reason: Close reason.
         """
         self.link.active = False
         self.logger.info("WebSocket Connection Lost")
@@ -93,6 +99,8 @@ class DSAWebSocket(WebSocketClientProtocol):
     def onMessage(self, payload, isBinary):
         """
         WebSocket message event.
+        :param payload: Data to send.
+        :param isBinary: True if the message is binary.
         """
         self.logger.debug("Received data: %s" % payload.decode("utf-8"))
         i = json.loads(payload.decode("utf-8"))
