@@ -5,7 +5,6 @@ import logging
 from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
 from dslink.Node import Node
-from dslink.Request import Request
 from dslink.WebSocket import WebSocket
 
 
@@ -49,6 +48,10 @@ class DSLink:
         self.logger.info("Started DSLink")
 
     def get_next_rid(self):
+        """
+        Get the next rid in the sequence. Initially starts from 1.
+        :return: Next rid in sequence.
+        """
         r = self.rid
         self.rid += 1
         return r
@@ -69,12 +72,13 @@ class DSLink:
         }, self)
         # TODO(logangorence) Track response.
 
-    def invoke(self, path, permit=None, params=None):
+    def invoke(self, path, permit=None, params=None, callback=None):
         """
         Invoke a remote method.
         :param path: Path of node.
         :param permit: Maximum permission of invoke.
         :param params: Parameters of invoke.
+        :param callback: Response callback.
         """
         i = {
             "rid": self.get_next_rid(),
@@ -90,7 +94,6 @@ class DSLink:
                 i
             ]
         })
-        # TODO(logangorence) Track response.
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):
@@ -171,10 +174,13 @@ class Configuration:
         """
         Object that contains configuration for the DSLink.
         :param name: DSLink name.
-        :param responder: True if acts as responder.
-        :param requester: True if acts as requester.
+        :param responder: True if acts as responder, default is False.
+        :param requester: True if acts as requester, default is False.
         :param ping_time: Time between pings, default is 30.
         """
+        if not responder and not requester:
+            print("DSLink is neither responder nor requester. Exiting now.")
+            exit(1)
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")

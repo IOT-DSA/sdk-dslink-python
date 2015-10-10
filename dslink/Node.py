@@ -115,6 +115,14 @@ class Node:
         self.config[key] = value
         self.update_subscribers()
 
+    def set_name(self, name):
+        """
+        Set the Node name.
+        :param name: Node name.
+        """
+        self.config["$name"] = name
+        self.update_subscribers()
+
     def set_invokable(self, invokable):
         """
         Set invokable state.

@@ -2,6 +2,7 @@ import unittest
 
 from dslink.Node import Node
 
+
 class NodeValueTests(unittest.TestCase):
     def test(self):
         floatnode = Node(None, None)
