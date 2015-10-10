@@ -74,8 +74,12 @@ class Request:
                 "stream": "closed"
             })
         elif self.method == "remove":
-            # TODO(logangorence) Implement remove method
             self.logger.debug("Remove method")
+            self.link.super_root.remove_config_attr(self.request["path"])
+            return Response({
+                "rid": self.rid,
+                "stream": "closed"
+            })
         elif self.method == "close":
             self.logger.debug("Close method")
             self.link.strman.close_stream(self.rid)

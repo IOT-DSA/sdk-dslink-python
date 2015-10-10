@@ -248,6 +248,18 @@ class Node:
         else:
             self.get(path).set_config_attr(path, value)
 
+    def remove_config_attr(self, path):
+        """
+        Remove config/attribute on Node.
+        :param path: Path of value to remove.
+        """
+        if path.startswith("/$") or path.startswith(self.path + "/$"):
+            del self.config[path[2:]]
+        elif path.startswith("/@") or path.startswith(self.path + "/@"):
+            del self.config[path[2:]]
+        else:
+            self.get(path).remove_config_attr(path)
+
     def is_subscribed(self):
         """
         Is the Node subscribed to?
