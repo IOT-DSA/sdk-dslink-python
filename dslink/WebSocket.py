@@ -60,6 +60,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         super().__init__()
         self.msg = 0
         self.logger = logging.getLogger("DSLink")
+        # noinspection PyUnresolvedReferences
         self.link = DSAWebSocket.link
         self.link.wsp = self
 
@@ -68,6 +69,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         Send a blank object for a ping.
         """
         self.logger.debug("Sent ping")
+        # noinspection PyTypeChecker
         self.sendMessage({})
         i = Timer(self.link.config.ping_time, self.sendPingMsg, ())
         i.start()
@@ -104,11 +106,14 @@ class DSAWebSocket(WebSocketClientProtocol):
             self.handleResponses(i["responses"])
         if ack:
             m["ack"] = i["msg"]
+            # noinspection PyTypeChecker
             self.sendMessage(m)
 
     def handleRequests(self, requests):
         """
-        Handle DSA requests.
+        Handle incoming requests.
+        :param requests: List of requests.
+        :return: Outgoing responses.
         """
         i = []
         for request in requests:
@@ -117,7 +122,8 @@ class DSAWebSocket(WebSocketClientProtocol):
 
     def handleResponses(self, responses):
         """
-        Handle DSA responses.
+        Handle incoming responses.
+        :param responses: List of responses.
         """
         for response in responses:
             Response(response)
@@ -125,7 +131,7 @@ class DSAWebSocket(WebSocketClientProtocol):
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
         """
         Send a message over the WebSocket.
-        :param payload:
+        :param payload: Message to send.
         """
         payload["msg"] = self.msg
         self.msg += 1

@@ -115,6 +115,15 @@ class Node:
         self.config[key] = value
         self.update_subscribers()
 
+    def set_attribute(self, key, value):
+        """
+        Set an attribute value.
+        :param key: Key of attribute.
+        :param value: Value of attribute.
+        """
+        self.attributes[key] = value
+        self.update_subscribers()
+
     def set_name(self, name):
         """
         Set the Node name.
@@ -137,7 +146,7 @@ class Node:
     def set_parameters(self, parameters):
         """
         Set parameters for action.
-        :param params: Parameters for action.
+        :param parameters: Parameters for action.
         :return: True on success.
         """
         if type(parameters) is list:
@@ -208,6 +217,10 @@ class Node:
         """
         if path == "/":
             return self
+        elif path.startswith("/$"):
+            return self
+        elif path.startswith("/@"):
+            return self
         else:
             try:
                 try:
@@ -218,7 +231,17 @@ class Node:
                     child = path[1:]
                     return self.children[child]
             except KeyError:
-                self.logger.warn("Non-existent Node requested %s" % path)
+                self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))
+
+    def set_config_attr(self, path, value):
+        if path == "/" or path == self.path:
+            self.set_value(value)
+        elif path.startswith("/$") or path.startswith(self.path + "/$"):
+            self.set_config(path[2:], value)
+        elif path.startswith("/@") or path.startswith(self.path + "/@"):
+            self.set_attribute(path[2:], value)
+        else:
+            self.get(path).set_config_attr(path, value)
 
     def is_subscribed(self):
         """
@@ -251,13 +274,14 @@ class Node:
         """
         Send subscription updates.
         """
+        responses = []
         for stream in self.streams:
+            responses.append(Response({
+                "rid": stream,
+                "stream": "open",
+                "updates": self.stream()
+            }).get_stream())
+        if responses:
             self.link.wsp.sendMessage({
-                "responses": [
-                    Response({
-                        "rid": stream,
-                        "stream": "open",
-                        "updates": self.stream()
-                    }).get_stream()
-                ]
+                "responses": responses
             })
