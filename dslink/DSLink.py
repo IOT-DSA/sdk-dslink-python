@@ -22,7 +22,7 @@ class DSLink:
         # DSLink Configuration
         self.config = config
 
-        # Temporary Node tree
+        # Node tree
         self.super_root = Node("", None)
         self.super_root.link = self
 
@@ -36,6 +36,7 @@ class DSLink:
         self.reqman = RequestManager()
 
         # DSLink setup
+        self.rid = 1
         self.keypair = Keypair()
         self.handshake = Handshake(self, config.name, config.broker, self.keypair, config.responder, config.requester)
         self.server_config = self.handshake.run_handshake()
@@ -46,7 +47,6 @@ class DSLink:
 
         # Connection setup
         self.active = False
-        self.rid = 1
         self.wsp = None
         self.websocket = WebSocket(self)
 
@@ -156,7 +156,7 @@ class SubscriptionManager:
         :param sid: SID of Subscription.
         """
         self.subscriptions[sid] = node
-        self.subscriptions[sid].subscribers.append(sid)
+        self.subscriptions[sid].add_subscriber(sid)
 
     def unsubscribe(self, sid):
         """
@@ -164,7 +164,7 @@ class SubscriptionManager:
         :param sid: SID of Subscription.
         """
         try:
-            self.subscriptions[sid].subscribers.remove(sid)
+            self.subscriptions[sid].remove_subscriber(sid)
             del self.subscriptions[sid]
         except KeyError:
             logging.getLogger("DSlink").debug("Unknown sid %s" % sid)

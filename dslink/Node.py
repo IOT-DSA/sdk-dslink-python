@@ -80,23 +80,8 @@ class Node:
         """
         # Set value and updated timestamp
         if self.value.set_value(value) and (not self.standalone or self.link.active):
-            # TODO(logangorence) Clean this up
             # Update any subscribers
-            for s in self.subscribers:
-                self.link.wsp.sendMessage({
-                    "responses": [
-                        {
-                            "rid": 0,
-                            "updates": [
-                                [
-                                    s,
-                                    value,
-                                    self.value.updated_at.isoformat()
-                                ]
-                            ]
-                        }
-                    ]
-                })
+            self.update_subscribers_values()
 
     def get_config(self, key):
         """
@@ -302,3 +287,38 @@ class Node:
             self.link.wsp.sendMessage({
                 "responses": responses
             })
+
+    def update_subscribers_values(self):
+        """
+        Update all Subscribers of a Value change.
+        """
+        for s in self.subscribers:
+            self.link.wsp.sendMessage({
+                "responses": [
+                    {
+                        "rid": 0,
+                        "updates": [
+                            [
+                                s,
+                                self.value.value,
+                                self.value.updated_at.isoformat()
+                            ]
+                        ]
+                    }
+                ]
+            })
+
+    def add_subscriber(self, sid):
+        """
+        Add a Subscriber.
+        :param sid: Subscriber ID.
+        """
+        self.subscribers.append(sid)
+        self.update_subscribers_values()
+
+    def remove_subscriber(self, sid):
+        """
+        Remove a Subscriber.
+        :param sid: Subscriber ID.
+        """
+        self.subscribers.remove(sid)

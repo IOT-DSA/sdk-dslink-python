@@ -1,7 +1,11 @@
 __title__ = "dslink"
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 __author__ = "Logan Gorence"
+
 __license__ = "Apache 2.0"
 __copyright__ = "Copyright 2015 DGLogik Inc."
 
-import dslink.DSLink
+from dslink.DSLink import DSLink, Configuration
+from dslink.Node import Node
+from dslink.Permission import Permission
+from dslink.Value import Value
