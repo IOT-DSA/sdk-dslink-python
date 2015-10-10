@@ -15,6 +15,10 @@ class DSLink:
     """
 
     def __init__(self, config):
+        """
+        Construct for DSLink.
+        :param config: Configuration object.
+        """
         # DSLink Configuration
         self.config = config
 
@@ -26,9 +30,10 @@ class DSLink:
         self.logger = self.create_logger("DSLink", self.config.log_level)
         self.logger.info("Starting DSLink")
 
-        # Subscription/stream setup
+        # Managers setup
         self.subman = SubscriptionManager()
         self.strman = StreamManager()
+        self.reqman = RequestManager()
 
         # DSLink setup
         self.keypair = Keypair()
@@ -56,21 +61,22 @@ class DSLink:
         self.rid += 1
         return r
 
-    def list(self, path):
+    def list(self, path, callback):
         """
         List a remote node.
         :param path: Request path.
         """
+        rid = self.get_next_rid()
         self.wsp.sendMessage({
             "requests": [
                 {
-                    "rid": self.get_next_rid(),
+                    "rid": rid,
                     "method": "list",
                     "path": path
                 }
             ]
         }, self)
-        # TODO(logangorence) Track response.
+        self.reqman.start_request(rid, callback)
 
     def invoke(self, path, permit=None, params=None, callback=None):
         """
@@ -163,6 +169,24 @@ class StreamManager:
             del self.streams[rid]
         except KeyError:
             logging.getLogger("DSLink").debug("Unknown rid %s" % rid)
+
+
+class RequestManager:
+    """
+    Manages outgoing requests and callbacks.
+    """
+
+    def __init__(self):
+        self.requests = {}
+
+    def start_request(self, rid, callback):
+        self.requests[rid] = callback
+
+    def stop_request(self, rid):
+        del self.requests[rid]
+
+    def invoke_request(self, rid, data):
+        self.requests[rid](data)
 
 
 class Configuration:

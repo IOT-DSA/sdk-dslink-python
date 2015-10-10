@@ -127,6 +127,8 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         for response in responses:
             Response(response)
+            if response["rid"] in self.link.reqman.requests:
+                self.link.reqman.invoke_request(response["rid"], response)
 
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
         """

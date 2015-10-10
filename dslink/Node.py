@@ -234,6 +234,11 @@ class Node:
                 self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))
 
     def set_config_attr(self, path, value):
+        """
+        Set value/config/attribute on Node.
+        :param path: Path of value to set.
+        :param value: Value to set.
+        """
         if path == "/" or path == self.path:
             self.set_value(value)
         elif path.startswith("/$") or path.startswith(self.path + "/$"):
