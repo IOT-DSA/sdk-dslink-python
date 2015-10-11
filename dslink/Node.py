@@ -6,7 +6,9 @@ from dslink.Value import Value
 
 
 class Node:
-    """ Represents a Node on the Node structure. """
+    """
+    Represents a Node on the Node structure.
+    """
 
     def __init__(self, name, parent, standalone=False):
         """
@@ -60,7 +62,6 @@ class Node:
         Set the Node's value type.
         :param t: Type to set.
         """
-        # TODO(logangorence) Check for valid type
         self.value.set_type(t)
         self.config["$type"] = t
 

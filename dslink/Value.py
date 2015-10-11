@@ -1,4 +1,18 @@
 from datetime import datetime
+import logging
+
+TYPES = [
+    "number",
+    "int",
+    "uint",
+    "string",
+    "bool",
+    "enum",
+    "bytes",
+    "map",
+    "array",
+    "dynamic"
+]
 
 
 class Value:
@@ -16,9 +30,9 @@ class Value:
         :param t: Value type.
         :return: True on success.
         """
-        # TODO(logangorence) Check for valid type
+        if t not in TYPES:
+            raise TypeError("%s is not an acceptable type" % t)
         self.type = t
-        return True
 
     def set_value(self, value):
         """
@@ -46,10 +60,13 @@ class Value:
         elif self.type == "int":
             return type(value) == int
         elif self.type == "bool":
-            # TODO(logangorence) Implement enum-like bool.
+            # TODO(logangorence): Implement enum-like bool.
             return type(value) == bool
         elif self.type == "enum":
             return type(value) == list
+        elif self.type == "dynamic":
+            # TODO(logangorence): Check to ensure that the type is still a valid one that we accept.
+            return True
 
     @staticmethod
     def build_enum(values):
