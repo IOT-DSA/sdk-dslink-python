@@ -80,6 +80,50 @@ class DSLink:
         }, self)
         self.reqman.start_request(rid, callback)
 
+    def set(self, path, value, permit=None, callback=None):
+        """
+        Set a remote value.
+        :param path: Path of value.
+        :param value: Value to set.
+        :param permit: Maximum permission of set.
+        :param callback: Response callback.
+        """
+        if not self.config.requester:
+            raise ValueError("Requester is not enabled.")
+        rid = self.get_next_rid()
+        i = {
+            "rid": rid,
+            "method": "set",
+            "path": path,
+            "value": value
+        }
+        if permit is not None:
+            i["permit"] = permit
+        self.wsp.sendMessage({
+            "requests": [
+                i
+            ]
+        })
+        if callback:
+            self.reqman.start_request(rid, callback)
+
+    def remove(self, path, callback=None):
+        """
+        Remove a remote value.
+        :param path: Path of value.
+        :param callback: Response callback.
+        """
+        if not self.config.requester:
+            raise ValueError("Requester is not enabled.")
+        rid = self.get_next_rid()
+        self.wsp.sendMessage({
+            "rid": rid,
+            "method": "remove",
+            "path": path
+        })
+        if callback:
+            self.reqman.start_request(rid, callback)
+
     def invoke(self, path, permit=None, params=None, callback=None):
         """
         Invoke a remote method.
@@ -107,6 +151,26 @@ class DSLink:
         })
         if callback:
             self.reqman.start_request(rid, callback)
+
+    # TODO(logangorence): Subscribe method.
+
+    # TODO(logangorence): Unsubscribe method.
+
+    def close(self, rid):
+        """
+        Close a stream.
+        :param rid: ID of request.
+        """
+        if not self.config.requester:
+            raise ValueError("Requester is not enabled.")
+        self.wsp.sendMessage({
+            "requests": [
+                {
+                    "rid": rid,
+                    "method": "close"
+                }
+            ]
+        })
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):
