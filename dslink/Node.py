@@ -160,6 +160,7 @@ class Node:
         for k in self.config:
             out.append([k, self.config[k]])
         # TODO(logangorence): Investigate "RuntimeError: dictionary changed size during iteration" error.
+        # TODO(logangorence): Use threading's Lock class for above issue.
         for child in self.children:
             child = self.children[child]
             if child.has_value():

@@ -52,17 +52,23 @@ class Value:
         :param value: Variable to check.
         :return: True if matches.
         """
-        # TODO(logangorence): Finish implementing types
         if self.type == "string":
             return type(value) == str
         elif self.type == "number":
             return type(value) == int or type(value) == float
         elif self.type == "int":
             return type(value) == int
+        elif self.type == "uint":
+            return type(value) == int and value > 0
         elif self.type == "bool":
-            # TODO(logangorence): Implement enum-like bool.
+            # TODO(logangorence): Implement enum-like bool. Examples: "bool[disabled,enabled]" or "bool[on,off]"
             return type(value) == bool
         elif self.type == "enum":
+            return type(value) == list
+        # TODO(logangorence): Bytes value type.
+        elif self.type == "map":
+            return type(value) == map
+        elif self.type == "array":
             return type(value) == list
         elif self.type == "dynamic":
             # TODO(logangorence): Check to ensure that the type is still a valid one that we accept.
