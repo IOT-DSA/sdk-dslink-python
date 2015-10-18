@@ -2,6 +2,7 @@ import random
 from threading import Timer
 
 from dslink.DSLink import DSLink, Configuration, Node
+from twisted.internet import reactor
 
 
 class RNGDSLink(DSLink):
@@ -75,8 +76,7 @@ class RNGDSLink(DSLink):
         for rng in self.rngs:
             if rng.is_subscribed():
                 rng.set_value(random.randint(0, 1000))
-        i = Timer(self.speed, self.update_rng, ())
-        i.start()
+        reactor.callLater(self.speed, self.update_rng)
 
 if __name__ == "__main__":
     RNGDSLink()

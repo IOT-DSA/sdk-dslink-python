@@ -49,9 +49,7 @@ class WebSocket:
         factory.protocol = DSAWebSocket
 
         reactor.connectTCP(self.url.hostname, self.port, factory)
-        reactor.run()
-        self.factory = WebSocketClientFactory(self.websocket_uri)
-        self.factory.protocol = DSAWebSocket
+        reactor.run(installSignalHandlers=False)
 
 
 class DSAWebSocket(WebSocketClientProtocol):
