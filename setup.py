@@ -12,10 +12,11 @@ setup(
         "dslink"
     ],
     install_requires=[
-        "asyncio",
         "autobahn",
+        "enum34",
         "pyelliptic",
         "requests",
+        "twisted",
         "zope.interface"
     ]
 )

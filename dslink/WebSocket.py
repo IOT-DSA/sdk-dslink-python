@@ -3,10 +3,10 @@ import hashlib
 import json
 import logging
 from threading import Timer, Thread
-from urllib.parse import urlparse
+from urlparse import urlparse
 
-import asyncio
-from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
+from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
+from twisted.internet import reactor
 
 from dslink.Request import Request
 from dslink.Response import Response
@@ -24,31 +24,34 @@ class WebSocket:
         """
         self.link = link
         self.factory = None
-        self.auth = bytes(link.salt, "utf-8") + link.shared_secret
+        self.auth = str(link.salt) + link.shared_secret
         self.auth = base64.urlsafe_b64encode(hashlib.sha256(self.auth).digest()).decode("utf-8").replace("=", "")
 
         # TODO(logangorence): Properly strip and replace with WebSocket path
         self.websocket_uri = link.config.broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + link.dsid + "&auth=" + self.auth
         self.url = urlparse(self.websocket_uri)
+        if self.url.port is None:
+            self.port = 80
+        else:
+            self.port = self.url.port
 
         DSAWebSocket.link = link
 
-        loop = asyncio.get_event_loop()
-        t = Thread(target=self.start_ws, args=(loop,))
+        t = Thread(target=self.start_ws)
         t.start()
 
-    def start_ws(self, loop):
+    def start_ws(self):
         """
         Start the WebSocket in a separate thread.
         :param loop: asyncio loop
         """
-        asyncio.set_event_loop(loop)
+        factory = WebSocketClientFactory(self.websocket_uri)
+        factory.protocol = DSAWebSocket
+
+        reactor.connectTCP(self.url.hostname, self.port, factory)
+        reactor.run()
         self.factory = WebSocketClientFactory(self.websocket_uri)
         self.factory.protocol = DSAWebSocket
-        coro = loop.create_connection(self.factory, host=self.url.hostname, port=self.url.port)
-        loop.run_until_complete(coro)
-        loop.run_forever()
-        loop.close()
 
 
 class DSAWebSocket(WebSocketClientProtocol):
@@ -58,12 +61,11 @@ class DSAWebSocket(WebSocketClientProtocol):
 
     def __init__(self):
         """
-        Constructor for DSAWebSocket.
-        """
-        super().__init__()
+            Constructor for DSAWebSocket.
+            """
+        super(DSAWebSocket, self).__init__()
         self.msg = 0
         self.logger = logging.getLogger("DSLink")
-        # noinspection PyUnresolvedReferences
         self.link = DSAWebSocket.link
         self.link.wsp = self
 
@@ -148,4 +150,4 @@ class DSAWebSocket(WebSocketClientProtocol):
         payload = json.dumps(payload, sort_keys=True)
         self.logger.debug("Sent data: %s" % payload)
         payload = payload.encode("utf-8")
-        super().sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)
+        super(DSAWebSocket, self).sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)

@@ -6,7 +6,7 @@ from dslink.DSLink import DSLink, Configuration, Node
 
 class RNGDSLink(DSLink):
     def __init__(self):
-        super().__init__(Configuration("python-rng", responder=True, requester=True))
+        DSLink.__init__(self, Configuration("python-rng", responder=True, requester=True))
         self.speed = 1
         self.rngs = []
         self.createRNG = Node("createRNG", self.super_root)

@@ -43,7 +43,7 @@ class DSLink:
         self.salt = self.server_config["salt"]
         self.dsid = self.handshake.get_dsid()
         self.shared_secret = self.keypair.keypair.get_ecdh_key(
-            base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"])))
+            base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"]).encode("utf-8")))
 
         # Connection setup
         self.active = False
@@ -315,7 +315,7 @@ class Configuration:
         :param ping_time: Time between pings, default is 30.
         """
         if not responder and not requester:
-            print("DSLink is neither responder nor requester. Exiting now.")
+            print "DSLink is neither responder nor requester. Exiting now."
             exit(1)
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
