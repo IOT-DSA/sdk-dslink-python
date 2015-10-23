@@ -74,8 +74,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         self.logger.debug("Sent ping")
         # noinspection PyTypeChecker
         self.sendMessage({})
-        i = Timer(self.link.config.ping_time, self.sendPingMsg, ())
-        i.start()
+        reactor.callLater(self.link.config.ping_time, self.sendPingMsg)
 
     def onOpen(self):
         """
