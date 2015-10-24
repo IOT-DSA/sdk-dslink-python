@@ -3,7 +3,7 @@ from dslink.DSLink import DSLink, Configuration, Node
 
 class LargeNodeStructure(DSLink):
     def __init__(self):
-        super().__init__(Configuration("python-large", responder=True, requester=True))
+        DSLink.__init__(self, Configuration("python-large", responder=True, requester=True))
         for x in range(0, 99999):
             first = Node("Test%i" % x, self.super_root)
             for y in range(0, 10):

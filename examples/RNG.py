@@ -1,5 +1,4 @@
 import random
-from threading import Timer
 
 from dslink.DSLink import DSLink, Configuration, Node
 from twisted.internet import reactor
@@ -46,9 +45,9 @@ class RNGDSLink(DSLink):
         self.super_root.add_child(self.setSpeed)
         self.update_rng()
 
-    def createCallback(self, params):
-        if self.super_root.get("/%s" % params["Name"]) is None:
-            rng = Node(params["Name"], self.super_root)
+    def createCallback(self, obj):
+        if self.super_root.get("/%s" % obj.params["Name"]) is None:
+            rng = Node(obj.params["Name"], self.super_root)
             rng.set_type("number")
             rng.set_value(1)
             self.super_root.add_child(rng)
@@ -64,8 +63,8 @@ class RNGDSLink(DSLink):
             ]
         ]
 
-    def setSpeedCallback(self, params):
-        self.speed = params["Speed"]
+    def setSpeedCallback(self, obj):
+        self.speed = obj.params["Speed"]
         return [
             [
                 True
