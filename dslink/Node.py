@@ -259,7 +259,7 @@ class Node:
         """
         self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         # noinspection PyCallingNonCallable
-        return (self.config["$columns"] if "$columns" in self.config else []), self.invoke_callback(params)
+        return (self.config["$columns"] if "$columns" in self.config else []), self.invoke_callback(CallbackParameters(self, params))
 
     def set_invoke_callback(self, callback):
         """
@@ -322,3 +322,9 @@ class Node:
         :param sid: Subscriber ID.
         """
         self.subscribers.remove(sid)
+
+
+class CallbackParameters:
+    def __init__(self, node, params):
+        self.node = node
+        self.params = params
