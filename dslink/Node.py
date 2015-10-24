@@ -43,13 +43,6 @@ class Node:
                 self.name = ""
                 self.path = ""
 
-    def has_value(self):
-        """
-        Check if the Node has a value.
-        :return: True if the Node has a value.
-        """
-        return self.value.type is not None
-
     def get_type(self):
         """
         Get the Node's value type.
@@ -78,11 +71,14 @@ class Node:
         """
         Set the Node's value.
         :param value: Value to set.
+        :return: True if the value was set.
         """
         # Set value and updated timestamp
-        if self.value.set_value(value) and (not self.standalone or self.link.active):
+        i = self.value.set_value(value)
+        if i and (not self.standalone or self.link.active):
             # Update any subscribers
             self.update_subscribers_values()
+        return i
 
     def get_config(self, key):
         """
@@ -163,7 +159,7 @@ class Node:
         # TODO(logangorence): Use threading's Lock class for above issue.
         for child in self.children:
             child = self.children[child]
-            if child.has_value():
+            if child.value.has_value():
                 val = {
                     "value": child.value.value,
                     "ts": child.value.updated_at.isoformat()
@@ -295,21 +291,22 @@ class Node:
         """
         Update all Subscribers of a Value change.
         """
-        for s in self.subscribers:
-            self.link.wsp.sendMessage({
-                "responses": [
-                    {
-                        "rid": 0,
-                        "updates": [
-                            [
-                                s,
-                                self.value.value,
-                                self.value.updated_at.isoformat()
+        if self.value.has_value():
+            for s in self.subscribers:
+                self.link.wsp.sendMessage({
+                    "responses": [
+                        {
+                            "rid": 0,
+                            "updates": [
+                                [
+                                    s,
+                                    self.value.value,
+                                    self.value.updated_at.isoformat()
+                                ]
                             ]
-                        ]
-                    }
-                ]
-            })
+                        }
+                    ]
+                })
 
     def add_subscriber(self, sid):
         """

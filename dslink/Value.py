@@ -45,6 +45,9 @@ class Value:
             return True
         return False
 
+    def has_value(self):
+        return self.value is not None and self.type is not None
+
     def check_type(self, value):
         """
         Check the type of a variable compared to the type of this Value.
