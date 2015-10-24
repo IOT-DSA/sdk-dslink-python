@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="dslink",
-    version="0.2.1",
+    version="0.2.2",
     description="DSLink SDK for Python",
     url="http://github.com/IOT-DSA/sdk-dslink-python",
     author="Logan Gorence",
@@ -18,5 +18,6 @@ setup(
         "requests",
         "twisted",
         "zope.interface"
-    ]
+    ],
+    use_2to3=True
 )
