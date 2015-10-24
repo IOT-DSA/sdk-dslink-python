@@ -11,12 +11,13 @@ class Keypair:
     Class to handle keypair generation, loading, and saving.
     """
 
-    def __init__(self):
+    def __init__(self, location):
         """
         Keypair Constructor.
         """
+        self.location = location
         self.keypair = None
-        if not os.path.isfile(".keys"):
+        if not os.path.isfile(self.location):
             self.generate_key()
             self.save_keys()
         else:
@@ -35,7 +36,7 @@ class Keypair:
         """
         Load the keys from a file.
         """
-        file = open(".keys", "rb")
+        file = open(self.location, "rb")
         keys = pickle.load(file)
         self.keypair = pyelliptic.ECC(curve="prime256v1",
                                       pubkey_x=keys["pubkey_x"],
@@ -46,7 +47,7 @@ class Keypair:
         """
         Save the keys to a file.
         """
-        file = open(".keys", "wb")
+        file = open(self.location, "wb")
         pickle.dump({
             "pubkey_x": self.keypair.pubkey_x,
             "pubkey_y": self.keypair.pubkey_y,

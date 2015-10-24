@@ -37,7 +37,7 @@ class DSLink:
 
         # DSLink setup
         self.rid = 1
-        self.keypair = Keypair()
+        self.keypair = Keypair(self.config.keypair_location)
         self.handshake = Handshake(self, config.name, config.broker, self.keypair, config.responder, config.requester)
         self.server_config = self.handshake.run_handshake()
         self.salt = self.server_config["salt"]
@@ -306,7 +306,7 @@ class Configuration:
     Provides configuration to the DSLink.
     """
 
-    def __init__(self, name, responder=False, requester=False, ping_time=30):
+    def __init__(self, name, responder=False, requester=False, ping_time=30, keypair_location=".keys"):
         """
         Object that contains configuration for the DSLink.
         :param name: DSLink name.
@@ -327,6 +327,7 @@ class Configuration:
         self.responder = responder
         self.requester = requester
         self.ping_time = ping_time
+        self.keypair_location = keypair_location
 
         if self.log_level == "critical":
             self.log_level = logging.CRITICAL
