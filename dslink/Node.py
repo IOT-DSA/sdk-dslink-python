@@ -29,6 +29,7 @@ class Node:
         self.subscribers = []
         self.streams = []
         self.invoke_callback = None
+        self.removed_children = []
         if parent is not None:
             self.name = name
             if parent.path.endswith("/"):
@@ -174,6 +175,12 @@ class Node:
                 child.path.split("/")[l],
                 i
             ])
+        for child in self.removed_children:
+            out.append({
+                "name": child.name,
+                "change": "remove"
+            })
+        del self.removed_children[:]
         return out
 
     def add_child(self, child):
@@ -190,8 +197,13 @@ class Node:
         """
         Remove a child from this Node.
         :param name: Child Node name.
+        :return: True on success.
         """
-        del self.children[name]
+        if name not in self.children:
+            return False
+        self.removed_children.append(self.children.pop(name))
+        self.update_subscribers()
+        return True
 
     def get(self, path):
         """

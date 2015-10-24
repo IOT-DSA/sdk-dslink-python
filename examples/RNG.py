@@ -51,6 +51,10 @@ class RNGDSLink(DSLink):
             rng.set_type("number")
             rng.set_value(1)
             self.super_root.add_child(rng)
+            delete = Node("delete", rng)
+            delete.set_invokable("config")
+            delete.set_invoke_callback(self.deleteCallback)
+            rng.add_child(delete)
             self.rngs.append(rng)
             return [
                 [
@@ -69,6 +73,12 @@ class RNGDSLink(DSLink):
             [
                 True
             ]
+        ]
+
+    def deleteCallback(self, obj):
+        self.super_root.remove_child(obj.node.parent.name)
+        return [
+            []
         ]
 
     def update_rng(self):
