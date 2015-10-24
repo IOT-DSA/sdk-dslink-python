@@ -1,8 +1,20 @@
 from setuptools import setup
+import sys
+
+requirements = [
+    "autobahn",
+    "pyelliptic",
+    "requests",
+    "twisted",
+    "zope.interface"
+]
+
+if sys.version_info < (3, 3):
+    requirements.append("enum34")
 
 setup(
     name="dslink",
-    version="0.2.2",
+    version="0.2.3",
     description="DSLink SDK for Python",
     url="http://github.com/IOT-DSA/sdk-dslink-python",
     author="Logan Gorence",
@@ -11,13 +23,6 @@ setup(
     packages=[
         "dslink"
     ],
-    install_requires=[
-        "autobahn",
-        "enum34",
-        "pyelliptic",
-        "requests",
-        "twisted",
-        "zope.interface"
-    ],
+    install_requires=requirements,
     use_2to3=True
 )
