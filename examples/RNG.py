@@ -1,6 +1,7 @@
 import random
 
 from dslink.DSLink import DSLink, Configuration, Node
+from dslink.Profile import Profile
 from twisted.internet import reactor
 
 
@@ -9,43 +10,48 @@ class RNGDSLink(DSLink):
         DSLink.__init__(self, Configuration("python-rng", responder=True, requester=True))
         self.speed = 1
         self.rngs = []
-        self.createRNG = Node("createRNG", self.super_root)
-        self.createRNG.set_config("$name", "Create RNG")
-        self.createRNG.set_invokable("config")
-        self.createRNG.set_parameters([
+
+        self.profile_manager.create_profile(Profile("createRNG"))
+        self.profile_manager.register_callback("createRNG", self.create_rng)
+
+    def get_default_nodes(self):
+        root = Node("", None)
+        root.link = self
+        create_rng = Node("createRNG", root)
+        create_rng.set_config("$name", "Create RNG")
+        create_rng.set_invokable("config")
+        create_rng.set_parameters([
             {
                 "name": "Name",
                 "type": "string"
             }
         ])
-        self.createRNG.set_columns([
+        create_rng.set_columns([
             {
                 "name": "Success",
                 "type": "bool"
             }
         ])
-        self.createRNG.set_invoke_callback(self.createCallback)
-        self.super_root.add_child(self.createRNG)
-        self.setSpeed = Node("setSpeed", self.super_root)
-        self.setSpeed.set_config("$name", "Set Speed")
-        self.setSpeed.set_invokable("config")
-        self.setSpeed.set_parameters([
+        root.add_child(create_rng)
+        set_speed = Node("setSpeed", root)
+        set_speed.set_config("$name", "Set Speed")
+        set_speed.set_invokable("config")
+        set_speed.set_parameters([
             {
                 "name": "Speed",
                 "type": "number"
             }
         ])
-        self.setSpeed.set_columns([
+        set_speed.set_columns([
             {
                 "name": "Success",
                 "type": "bool"
             }
         ])
-        self.setSpeed.set_invoke_callback(self.setSpeedCallback)
-        self.super_root.add_child(self.setSpeed)
-        self.update_rng()
+        root.add_child(set_speed)
+        return root
 
-    def createCallback(self, obj):
+    def create_rng(self, obj):
         if self.super_root.get("/%s" % obj.params["Name"]) is None:
             rng = Node(obj.params["Name"], self.super_root)
             rng.set_type("number")
@@ -76,6 +82,7 @@ class RNGDSLink(DSLink):
         ]
 
     def deleteCallback(self, obj):
+        # TODO(logangorence): Memory Leak: Remove old RNG.
         self.super_root.remove_child(obj.node.parent.name)
         return [
             []

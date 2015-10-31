@@ -1,14 +1,19 @@
 import argparse
 import base64
+import json
 import logging
+import os.path
+from twisted.internet import reactor
 
 from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
 from dslink.Node import Node
+from dslink.Profile import ProfileManager
 from dslink.WebSocket import WebSocket
 
 
 class DSLink:
+    # TODO(logangorence): Implement exit methods, and handle signals.
     """
     Base DSLink class which creates the node structure,
     subscription/stream manager, and connects to the broker.
@@ -19,12 +24,13 @@ class DSLink:
         Construct for DSLink.
         :param config: Configuration object.
         """
+        self.active = False
+
         # DSLink Configuration
         self.config = config
 
-        # Node tree
-        self.super_root = Node("", None)
-        self.super_root.link = self
+        # Load or create an empty Node structure
+        self.super_root = self.load_nodes()
 
         # Logger setup
         self.logger = self.create_logger("DSLink", self.config.log_level)
@@ -34,10 +40,11 @@ class DSLink:
         self.subman = SubscriptionManager()
         self.strman = StreamManager()
         self.reqman = RequestManager()
+        self.profile_manager = ProfileManager()
 
         # DSLink setup
         self.rid = 1
-        self.keypair = Keypair(self.config.keypair_location)
+        self.keypair = Keypair(self.config.keypair_path)
         self.handshake = Handshake(self, config.name, config.broker, self.keypair, config.responder, config.requester)
         self.server_config = self.handshake.run_handshake()
         self.salt = self.server_config["salt"]
@@ -46,9 +53,11 @@ class DSLink:
             base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"]).encode("utf-8")))
 
         # Connection setup
-        self.active = False
         self.wsp = None
         self.websocket = WebSocket(self)
+
+        # Start saving timer
+        # TODO reactor.callLater(1, self.save_timer)
 
         self.logger.info("Started DSLink")
 
@@ -171,6 +180,31 @@ class DSLink:
                 }
             ]
         })
+
+    def load_nodes(self):
+        if os.path.exists(self.config.nodes_path):
+            file = open(self.config.nodes_path, "r")
+            obj = json.load(file)
+            file.close()
+            return Node.from_json(obj, None, "", link=self)
+        else:
+            node = self.get_default_nodes()
+            return node
+
+    def save_timer(self):
+        self.save_nodes()
+        # Call again later...
+        reactor.callLater(5, self.save_timer)
+
+    def save_nodes(self):
+        file = open(self.config.nodes_path, "w")
+        file.write(json.dumps(self.super_root.to_json(), sort_keys=True, indent=2))
+        file.close()
+        self.logger.debug("nodes.json was saved.")
+
+    # noinspection PyMethodMayBeStatic
+    def get_default_nodes(self):
+        return Node("", None)
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):
@@ -306,7 +340,8 @@ class Configuration:
     Provides configuration to the DSLink.
     """
 
-    def __init__(self, name, responder=False, requester=False, ping_time=30, keypair_location=".keys"):
+    def __init__(self, name, responder=False, requester=False, ping_time=30, keypair_path=".keys",
+                 nodes_path="nodes.json"):
         """
         Object that contains configuration for the DSLink.
         :param name: DSLink name.
@@ -327,7 +362,8 @@ class Configuration:
         self.responder = responder
         self.requester = requester
         self.ping_time = ping_time
-        self.keypair_location = keypair_location
+        self.keypair_path = keypair_path
+        self.nodes_path = nodes_path
 
         if self.log_level == "critical":
             self.log_level = logging.CRITICAL

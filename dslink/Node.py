@@ -108,6 +108,7 @@ class Node:
         self.update_subscribers()
 
     def set_name(self, name):
+        # TODO(logangorence): Refactor to set_display_name for 0.3
         """
         Set the Node name.
         :param name: Node name.
@@ -118,11 +119,14 @@ class Node:
     def set_invokable(self, invokable):
         """
         Set invokable state.
-        :param invokable: Invokable permit.
+        :param invokable: Invokable permit string or true for everyone can access.
         :return: True on success.
         """
         if type(invokable) is str:
             self.set_config("$invokable", invokable)
+            return True
+        elif type(invokable) is bool and invokable:
+            self.set_config("$invokable", "read")
             return True
         return False
 
@@ -188,6 +192,8 @@ class Node:
         Add a child to this Node.
         :param child: Child to add.
         """
+        if child.name in self.children:
+            raise ValueError("Child already exists in %s" % self.path)
         self.children[child.name] = child
 
         if self.standalone or self.link.active:
@@ -334,6 +340,41 @@ class Node:
         :param sid: Subscriber ID.
         """
         self.subscribers.remove(sid)
+
+    def to_json(self):
+        """
+        Convert to an object that is saved to JSON.
+        :return: JSON object.
+        """
+        out = {}
+
+        for key in self.config:
+            out[key] = self.config[key]
+        for key in self.attributes:
+            out[key] = self.attributes[key]
+        for child in self.children:
+            out[child] = self.children[child].to_json()
+
+        return out
+
+    @staticmethod
+    def from_json(obj, root, name, link=None):
+        """
+        Convert a JSON object to a String
+        :return: Node that was created.
+        """
+        node = Node(name, root)
+        if link is not None:
+            node.link = link
+
+        if type(obj) is dict:
+            for prop in obj:
+                if prop[:1] is "$":
+                    node.set_config(prop, obj[prop])
+                else:
+                    node.add_child(Node.from_json(obj[prop], node, prop))
+
+        return node
 
 
 class CallbackParameters:
