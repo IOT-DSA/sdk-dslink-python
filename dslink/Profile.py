@@ -20,7 +20,7 @@ class ProfileManager:
 
     def create_profile(self, profile):
         profile_node = self.link.super_root.get("/defs/profile/")
-        if profile.name in self.profiles and not profile.has_child(profile.name):
+        if profile.name in self.profiles and profile_node.has_child(profile.name):
             raise ValueError("Profile %s already exists" % profile.name)
         self.profiles[profile.name] = profile
         profile_node.add_child(Node(profile.name, profile_node))

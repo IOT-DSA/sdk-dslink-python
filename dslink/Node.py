@@ -10,7 +10,7 @@ class Node:
     Represents a Node on the Node structure.
     """
 
-    def __init__(self, name, parent, standalone=False):
+    def __init__(self, name, parent, standalone=False, no_export=False):
         """
         Node Constructor.
         :param name: Node name.
@@ -22,13 +22,13 @@ class Node:
             self.link = parent.link
         self.parent = parent
         self.standalone = standalone
+        self.no_export = no_export
         self.value = Value()
         self.children = {}
         self.config = OrderedDict([("$is", "node")])
         self.attributes = OrderedDict()
         self.subscribers = []
         self.streams = []
-        self.invoke_callback = None
         self.removed_children = []
         if parent is not None:
             self.name = name
@@ -351,7 +351,8 @@ class Node:
         for key in self.attributes:
             out[key] = self.attributes[key]
         for child in self.children:
-            out[child] = self.children[child].to_json()
+            if not self.children[child].no_export:
+                out[child] = self.children[child].to_json()
 
         return out
 
@@ -367,7 +368,7 @@ class Node:
 
         if type(obj) is dict:
             for prop in obj:
-                if prop[:1] is "$":
+                if prop.startswith("$"):
                     node.set_config(prop, obj[prop])
                 else:
                     node.add_child(Node.from_json(obj[prop], node, prop))

@@ -31,6 +31,7 @@ class DSLink:
 
         # Load or create an empty Node structure
         self.super_root = self.load_nodes()
+        self.create_defs()
 
         # Logger setup
         self.logger = self.create_logger("DSLink", self.config.log_level)
@@ -57,7 +58,7 @@ class DSLink:
         self.websocket = WebSocket(self)
 
         # Start saving timer
-        # TODO reactor.callLater(1, self.save_timer)
+        # reactor.callLater(1, self.save_timer)
 
         self.logger.info("Started DSLink")
 
@@ -209,12 +210,14 @@ class DSLink:
     def get_root_node(self):
         root = Node("", None)
         root.link = self
-        defs = Node("defs", root)
-        defs.set_config("$hidden", True)
-        defs.add_child(Node("profile", defs))
-        root.add_child(defs)
 
         return root
+
+    def create_defs(self):
+        defs = Node("defs", self.super_root, no_export=True)
+        defs.set_config("$hidden", True)
+        defs.add_child(Node("profile", defs))
+        self.super_root.add_child(defs)
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):
