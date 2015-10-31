@@ -28,14 +28,16 @@ class WebSocket:
         self.auth = base64.urlsafe_b64encode(hashlib.sha256(self.auth).digest()).decode("utf-8").replace("=", "")
 
         # TODO(logangorence): Properly strip and replace with WebSocket path
-        self.websocket_uri = link.config.broker[:-5].replace("http", "ws") + "/ws" + "?dsId=" + link.dsid + "&auth=" + self.auth
+        self.websocket_uri = self.link.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s&auth=%s" % (self.link.dsid, self.auth)
+        if self.link.config.token is not None:
+            self.websocket_uri += "&token=%s" % self.link.config.token
         self.url = urlparse(self.websocket_uri)
         if self.url.port is None:
             self.port = 80
         else:
             self.port = self.url.port
 
-        DSAWebSocket.link = link
+        DSAWebSocket.link = self.link
 
         t = Thread(target=self.start_ws)
         t.start()
@@ -48,6 +50,7 @@ class WebSocket:
         factory = WebSocketClientFactory(self.websocket_uri)
         factory.protocol = DSAWebSocket
 
+        self.link.logger.debug("Connecting WebSocket to %s" % self.websocket_uri)
         reactor.connectTCP(self.url.hostname, self.port, factory)
         reactor.run(installSignalHandlers=False)
 

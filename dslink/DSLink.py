@@ -45,7 +45,7 @@ class DSLink:
         # DSLink setup
         self.rid = 1
         self.keypair = Keypair(self.config.keypair_path)
-        self.handshake = Handshake(self, config.name, config.broker, self.keypair, config.responder, config.requester)
+        self.handshake = Handshake(self, self.keypair)
         self.server_config = self.handshake.run_handshake()
         self.salt = self.server_config["salt"]
         self.dsid = self.handshake.get_dsid()
@@ -365,10 +365,12 @@ class Configuration:
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")
+        parser.add_argument("--token")
         args = parser.parse_args()
         self.name = name
         self.broker = args.broker
         self.log_level = args.log.lower()
+        self.token = args.token
         self.responder = responder
         self.requester = requester
         self.ping_time = ping_time
