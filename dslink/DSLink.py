@@ -205,7 +205,7 @@ class DSLink:
 
     # noinspection PyMethodMayBeStatic
     def get_default_nodes(self):
-        return Node("", None)
+        return self.get_root_node()
 
     def get_root_node(self):
         root = Node("", None)
