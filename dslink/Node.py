@@ -211,6 +211,14 @@ class Node:
         self.update_subscribers()
         return True
 
+    def has_child(self, name):
+        """
+        Check if this Node has child of name.
+        :param name: Name of child.
+        :return: True if the child of name exists.
+        """
+        return name in self.children
+
     def get(self, path):
         """
         Get a Node from this position on the Node structure.
@@ -277,9 +285,7 @@ class Node:
         """
         self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         # noinspection PyCallingNonCallable
-        return (self.config["$columns"] if "$columns" in self.config else []), \
-               self.link.profile_manager.get_profile(self.get_config("$profile")).run_callback(
-                   CallbackParameters(self, params))
+        return (self.config["$columns"] if "$columns" in self.config else []), self.link.profile_manager.get_profile(self.get_config("$is")).run_callback(CallbackParameters(self, params))
 
     def update_subscribers(self):
         """

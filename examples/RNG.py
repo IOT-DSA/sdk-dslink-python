@@ -14,14 +14,20 @@ class RNGDSLink(DSLink):
         self.profile_manager.create_profile(Profile("createRNG"))
         self.profile_manager.register_callback("createRNG", self.create_rng)
 
+        self.profile_manager.create_profile(Profile("setSpeed"))
+        self.profile_manager.register_callback("setSpeed", self.set_speed)
+
+        self.profile_manager.create_profile(Profile("deleteRNG"))
+        self.profile_manager.register_callback("deleteRNG", self.delete_rng)
+
         self.update_rng()
 
     def get_default_nodes(self):
-        root = Node("", None)
-        root.link = self
+        root = self.get_root_node()
+
         create_rng = Node("createRNG", root)
         create_rng.set_config("$name", "Create RNG")
-        create_rng.set_config("$profile", "createRNG")
+        create_rng.set_config("$is", "createRNG")
         create_rng.set_invokable("config")
         create_rng.set_parameters([
             {
@@ -38,6 +44,7 @@ class RNGDSLink(DSLink):
         root.add_child(create_rng)
         set_speed = Node("setSpeed", root)
         set_speed.set_config("$name", "Set Speed")
+        set_speed.set_config("$is", "setSpeed")
         set_speed.set_invokable("config")
         set_speed.set_parameters([
             {
@@ -61,6 +68,7 @@ class RNGDSLink(DSLink):
             rng.set_value(1)
             self.super_root.add_child(rng)
             delete = Node("delete", rng)
+            delete.set_config("$is", "deleteRNG")
             delete.set_invokable("config")
             # TODO delete.set_invoke_callback(self.deleteCallback)
             rng.add_child(delete)
@@ -76,7 +84,7 @@ class RNGDSLink(DSLink):
             ]
         ]
 
-    def setSpeedCallback(self, obj):
+    def set_speed(self, obj):
         self.speed = obj.params["Speed"]
         return [
             [
@@ -84,7 +92,7 @@ class RNGDSLink(DSLink):
             ]
         ]
 
-    def deleteCallback(self, obj):
+    def delete_rng(self, obj):
         # TODO(logangorence): Memory Leak: Remove old RNG.
         self.super_root.remove_child(obj.node.parent.name)
         return [

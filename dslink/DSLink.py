@@ -40,7 +40,7 @@ class DSLink:
         self.subman = SubscriptionManager()
         self.strman = StreamManager()
         self.reqman = RequestManager()
-        self.profile_manager = ProfileManager()
+        self.profile_manager = ProfileManager(self)
 
         # DSLink setup
         self.rid = 1
@@ -205,6 +205,16 @@ class DSLink:
     # noinspection PyMethodMayBeStatic
     def get_default_nodes(self):
         return Node("", None)
+
+    def get_root_node(self):
+        root = Node("", None)
+        root.link = self
+        defs = Node("defs", root)
+        defs.set_config("$hidden", True)
+        defs.add_child(Node("profile", defs))
+        root.add_child(defs)
+
+        return root
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):

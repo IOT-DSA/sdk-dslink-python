@@ -1,3 +1,6 @@
+from dslink.Node import Node
+
+
 class Profile:
     def __init__(self, name):
         self.name = name
@@ -5,20 +8,22 @@ class Profile:
 
     def run_callback(self, parameters):
         if hasattr(self.callback, "__call__"):
-            self.callback(parameters)
+            return self.callback(parameters)
         else:
             raise TypeError("Profile %s does not define a callback" % self.name)
 
 
-
 class ProfileManager:
-    def __init__(self):
+    def __init__(self, link):
         self.profiles = {}
+        self.link = link
 
     def create_profile(self, profile):
-        if profile.name in self.profiles:
+        profile_node = self.link.super_root.get("/defs/profile/")
+        if profile.name in self.profiles and not profile.has_child(profile.name):
             raise ValueError("Profile %s already exists" % profile.name)
         self.profiles[profile.name] = profile
+        profile_node.add_child(Node(profile.name, profile_node))
 
     def get_profile(self, profile):
         return self.profiles[profile]
