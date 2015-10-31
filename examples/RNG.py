@@ -11,6 +11,8 @@ class RNGDSLink(DSLink):
         self.speed = 1
         self.rngs = {}
 
+        self.profile_manager.create_profile(Profile("rng"))
+
         self.profile_manager.create_profile(Profile("createRNG"))
         self.profile_manager.register_callback("createRNG", self.create_rng)
 
@@ -20,6 +22,7 @@ class RNGDSLink(DSLink):
         self.profile_manager.create_profile(Profile("deleteRNG"))
         self.profile_manager.register_callback("deleteRNG", self.delete_rng)
 
+        self.restore_rngs()
         self.update_rng()
 
     def get_default_nodes(self):
@@ -65,8 +68,9 @@ class RNGDSLink(DSLink):
         name = obj.params["Name"]
         if self.super_root.get("/%s" % name) is None:
             rng = Node(name, self.super_root)
+            rng.set_config("$is", "rng")
             rng.set_type("number")
-            rng.set_value(1)
+            rng.set_value(0)
             self.super_root.add_child(rng)
             delete = Node("delete", rng)
             delete.set_config("$is", "deleteRNG")
@@ -98,6 +102,14 @@ class RNGDSLink(DSLink):
         return [
             []
         ]
+
+    def restore_rngs(self):
+        for child in self.super_root.children:
+            node = self.super_root.children[child]
+            if node.get_config("$is") == "rng":
+                self.rngs[node.name] = node
+                print(self.rngs)
+                node.set_value(1)
 
     def update_rng(self):
         for rng in self.rngs:

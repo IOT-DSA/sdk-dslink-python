@@ -58,7 +58,7 @@ class DSLink:
         self.websocket = WebSocket(self)
 
         # Start saving timer
-        # reactor.callLater(1, self.save_timer)
+        reactor.callLater(1, self.save_timer)
 
         self.logger.info("Started DSLink")
 
