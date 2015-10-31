@@ -9,7 +9,7 @@ class RNGDSLink(DSLink):
     def __init__(self):
         DSLink.__init__(self, Configuration("python-rng", responder=True, requester=True))
         self.speed = 1
-        self.rngs = []
+        self.rngs = {}
 
         self.profile_manager.create_profile(Profile("createRNG"))
         self.profile_manager.register_callback("createRNG", self.create_rng)
@@ -62,17 +62,17 @@ class RNGDSLink(DSLink):
         return root
 
     def create_rng(self, obj):
-        if self.super_root.get("/%s" % obj.params["Name"]) is None:
-            rng = Node(obj.params["Name"], self.super_root)
+        name = obj.params["Name"]
+        if self.super_root.get("/%s" % name) is None:
+            rng = Node(name, self.super_root)
             rng.set_type("number")
             rng.set_value(1)
             self.super_root.add_child(rng)
             delete = Node("delete", rng)
             delete.set_config("$is", "deleteRNG")
             delete.set_invokable("config")
-            # TODO delete.set_invoke_callback(self.deleteCallback)
             rng.add_child(delete)
-            self.rngs.append(rng)
+            self.rngs[name] = rng
             return [
                 [
                     True
@@ -93,7 +93,7 @@ class RNGDSLink(DSLink):
         ]
 
     def delete_rng(self, obj):
-        # TODO(logangorence): Memory Leak: Remove old RNG.
+        del self.rngs[obj.node.parent.name]
         self.super_root.remove_child(obj.node.parent.name)
         return [
             []
@@ -101,8 +101,8 @@ class RNGDSLink(DSLink):
 
     def update_rng(self):
         for rng in self.rngs:
-            if rng.is_subscribed():
-                rng.set_value(random.randint(0, 1000))
+            if self.rngs[rng].is_subscribed():
+                self.rngs[rng].set_value(random.randint(0, 1000))
         reactor.callLater(self.speed, self.update_rng)
 
 if __name__ == "__main__":
