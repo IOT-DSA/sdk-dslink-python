@@ -277,17 +277,9 @@ class Node:
         """
         self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         # noinspection PyCallingNonCallable
-        return (self.config["$columns"] if "$columns" in self.config else []), self.invoke_callback(CallbackParameters(self, params))
-
-    def set_invoke_callback(self, callback):
-        """
-        Set the invoke callback.
-        :param callback: Callback to call on an invoke method.
-        """
-        if hasattr(callback, "__call__"):
-            self.invoke_callback = callback
-        else:
-            raise ValueError("Provided callback is not a function.")
+        return (self.config["$columns"] if "$columns" in self.config else []), \
+               self.link.profile_manager.get_profile(self.get_config("$profile")).run_callback(
+                   CallbackParameters(self, params))
 
     def update_subscribers(self):
         """

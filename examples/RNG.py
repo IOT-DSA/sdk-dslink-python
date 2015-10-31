@@ -14,11 +14,14 @@ class RNGDSLink(DSLink):
         self.profile_manager.create_profile(Profile("createRNG"))
         self.profile_manager.register_callback("createRNG", self.create_rng)
 
+        self.update_rng()
+
     def get_default_nodes(self):
         root = Node("", None)
         root.link = self
         create_rng = Node("createRNG", root)
         create_rng.set_config("$name", "Create RNG")
+        create_rng.set_config("$profile", "createRNG")
         create_rng.set_invokable("config")
         create_rng.set_parameters([
             {
@@ -59,7 +62,7 @@ class RNGDSLink(DSLink):
             self.super_root.add_child(rng)
             delete = Node("delete", rng)
             delete.set_invokable("config")
-            delete.set_invoke_callback(self.deleteCallback)
+            # TODO delete.set_invoke_callback(self.deleteCallback)
             rng.add_child(delete)
             self.rngs.append(rng)
             return [
