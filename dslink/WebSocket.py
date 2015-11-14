@@ -45,7 +45,6 @@ class WebSocket:
     def start_ws(self):
         """
         Start the WebSocket in a separate thread.
-        :param loop: asyncio loop
         """
         factory = WebSocketClientFactory(self.websocket_uri)
         factory.protocol = DSAWebSocket

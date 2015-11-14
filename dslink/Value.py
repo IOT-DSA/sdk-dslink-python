@@ -57,11 +57,11 @@ class Value:
         if self.type == "string":
             return type(value) == str
         elif self.type == "number":
-            return type(value) == int or type(value) == float
+            return type(value) == int or type(value) == long or type(value) == float
         elif self.type == "int":
-            return type(value) == int
+            return type(value) == int or type(value) == long
         elif self.type == "uint":
-            return type(value) == int and value > 0
+            return type(value) == int or type(value) == long and value > 0
         elif self.type == "bool":
             # TODO(logangorence): Implement enum-like bool. Examples: "bool[disabled,enabled]" or "bool[on,off]"
             return type(value) == bool
