@@ -56,6 +56,7 @@ class Request:
             })
         elif self.method == "invoke":
             self.logger.debug("Invoke method")
+            # TODO(logangorence) Handle not implemented profiles
             columns, values = self.link.super_root.get(self.request["path"]).invoke(self.request["params"])
             # TODO(logangorence) Implement streaming invokes
             return Response({
