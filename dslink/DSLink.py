@@ -3,7 +3,6 @@ import base64
 import json
 import logging
 import os.path
-import signal
 from twisted.internet import reactor
 
 from dslink.Crypto import Keypair
@@ -14,7 +13,6 @@ from dslink.WebSocket import WebSocket
 
 
 class DSLink:
-    # TODO(logangorence): Implement exit methods, and handle signals.
     """
     Base DSLink class which creates the node structure,
     subscription/stream manager, and connects to the broker.
@@ -62,7 +60,11 @@ class DSLink:
         if not self.config.no_save_nodes:
             reactor.callLater(1, self.save_timer)
 
+        reactor.callLater(1, self.start)
+
         self.logger.info("Started DSLink")
+        self.logger.debug("Starting reactor")
+        reactor.run()
 
     def get_next_rid(self):
         """
@@ -194,10 +196,6 @@ class DSLink:
             node = self.get_default_nodes()
             return node
 
-    def init(self):
-        # Blank method
-        f
-
     def save_timer(self):
         self.save_nodes()
         # Call again later...
@@ -207,7 +205,10 @@ class DSLink:
         file = open(self.config.nodes_path, "w")
         file.write(json.dumps(self.super_root.to_json(), sort_keys=True, indent=2))
         file.close()
-        self.logger.debug("nodes.json was saved.")
+
+    def start(self):
+        # Do nothing.
+        self.logger.log("Running default init")
 
     # noinspection PyMethodMayBeStatic
     def get_default_nodes(self):

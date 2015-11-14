@@ -6,49 +6,48 @@ from twisted.internet import reactor
 
 
 class RaspberryPiDSLink(DSLink):
-    def __init__(self):
-        self.cpu_temp = None
-        self.cpu_usage = None
-        self.mem_avail = None
-        self.mem_total = None
-        self.mem_used = None
+    def start(self):
 
-        DSLink.__init__(self, Configuration("raspberry-pi", responder=True, no_save_nodes=True))
+        self.cpu_usage = self.super_root.get("/cpu_usage")
+        self.cpu_temp = self.super_root.get("/cpu_temp")
+        self.mem_avail = self.super_root.get("/mem_avail")
+        self.mem_total = self.super_root.get("/mem_total")
+        self.mem_used = self.super_root.get("/mem_used")
 
         self.update_data()
 
     def get_default_nodes(self):
         root = self.get_root_node()
 
-        self.cpu_usage = Node("cpu_usage", root)
-        self.cpu_usage.set_name("CPU Usage")
-        self.cpu_usage.set_type("number")
-        self.cpu_usage.set_value(0.0)
-        root.add_child(self.cpu_usage)
+        cpu_usage = Node("cpu_usage", root)
+        cpu_usage.set_name("CPU Usage")
+        cpu_usage.set_type("number")
+        cpu_usage.set_value(0.0)
+        root.add_child(cpu_usage)
 
-        self.cpu_temp = Node("cpu_temp", root)
-        self.cpu_temp.set_name("CPU Temperature")
-        self.cpu_temp.set_type("number")
-        self.cpu_temp.set_value(0.0)
-        root.add_child(self.cpu_temp)
+        cpu_temp = Node("cpu_temp", root)
+        cpu_temp.set_name("CPU Temperature")
+        cpu_temp.set_type("number")
+        cpu_temp.set_value(0.0)
+        root.add_child(cpu_temp)
 
-        self.mem_avail = Node("mem_avail", root)
-        self.mem_avail.set_name("Memory Available")
-        self.mem_avail.set_type("int")
-        self.mem_avail.set_value(0)
-        root.add_child(self.mem_avail)
+        mem_avail = Node("mem_avail", root)
+        mem_avail.set_name("Memory Available")
+        mem_avail.set_type("int")
+        mem_avail.set_value(0)
+        root.add_child(mem_avail)
 
-        self.mem_total = Node("mem_total", root)
-        self.mem_total.set_name("Memory Total")
-        self.mem_total.set_type("int")
-        self.mem_total.set_value(0)
-        root.add_child(self.mem_total)
+        mem_total = Node("mem_total", root)
+        mem_total.set_name("Memory Total")
+        mem_total.set_type("int")
+        mem_total.set_value(0)
+        root.add_child(mem_total)
 
-        self.mem_used = Node("mem_used", root)
-        self.mem_used.set_name("Memory Used")
-        self.mem_used.set_type("int")
-        self.mem_used.set_value(0)
-        root.add_child(self.mem_used)
+        mem_used = Node("mem_used", root)
+        mem_used.set_name("Memory Used")
+        mem_used.set_type("int")
+        mem_used.set_value(0)
+        root.add_child(mem_used)
 
         return root
 
@@ -70,4 +69,4 @@ class RaspberryPiDSLink(DSLink):
             return 0.0
 
 if __name__ == "__main__":
-    RaspberryPiDSLink()
+    RaspberryPiDSLink(Configuration("raspberry-pi", responder=True))

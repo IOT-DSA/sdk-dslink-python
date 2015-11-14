@@ -1,5 +1,5 @@
 __title__ = "dslink"
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 __author__ = "Logan Gorence"
 
 __license__ = "Apache 2.0"

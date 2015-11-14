@@ -6,8 +6,7 @@ from twisted.internet import reactor
 
 
 class RNGDSLink(DSLink):
-    def __init__(self):
-        DSLink.__init__(self, Configuration("python-rng", responder=True, requester=True))
+    def start(self):
         self.speed = 1
         self.rngs = {}
 
@@ -108,7 +107,6 @@ class RNGDSLink(DSLink):
             node = self.super_root.children[child]
             if node.get_config("$is") == "rng":
                 self.rngs[node.name] = node
-                print(self.rngs)
                 node.set_value(1)
 
     def update_rng(self):
@@ -118,4 +116,4 @@ class RNGDSLink(DSLink):
         reactor.callLater(self.speed, self.update_rng)
 
 if __name__ == "__main__":
-    RNGDSLink()
+    RNGDSLink(Configuration("python-rng", responder=True, requester=True))

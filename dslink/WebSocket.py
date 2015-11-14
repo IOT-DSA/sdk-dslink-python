@@ -38,20 +38,11 @@ class WebSocket:
             self.port = self.url.port
 
         DSAWebSocket.link = self.link
-
-        t = Thread(target=self.start_ws)
-        t.start()
-
-    def start_ws(self):
-        """
-        Start the WebSocket in a separate thread.
-        """
         factory = WebSocketClientFactory(self.websocket_uri)
         factory.protocol = DSAWebSocket
 
         self.link.logger.debug("Connecting WebSocket to %s" % self.websocket_uri)
         reactor.connectTCP(self.url.hostname, self.port, factory)
-        reactor.run(installSignalHandlers=False)
 
 
 class DSAWebSocket(WebSocketClientProtocol):
