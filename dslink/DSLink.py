@@ -3,6 +3,7 @@ import base64
 import json
 import logging
 import os.path
+import signal
 from twisted.internet import reactor
 
 from dslink.Crypto import Keypair
@@ -58,7 +59,8 @@ class DSLink:
         self.websocket = WebSocket(self)
 
         # Start saving timer
-        reactor.callLater(1, self.save_timer)
+        if not self.config.no_save_nodes:
+            reactor.callLater(1, self.save_timer)
 
         self.logger.info("Started DSLink")
 
@@ -191,6 +193,10 @@ class DSLink:
         else:
             node = self.get_default_nodes()
             return node
+
+    def init(self):
+        # Blank method
+        f
 
     def save_timer(self):
         self.save_nodes()
@@ -354,7 +360,7 @@ class Configuration:
     """
 
     def __init__(self, name, responder=False, requester=False, ping_time=30, keypair_path=".keys",
-                 nodes_path="nodes.json"):
+                 nodes_path="nodes.json", no_save_nodes=False):
         """
         Object that contains configuration for the DSLink.
         :param name: DSLink name.
@@ -379,6 +385,7 @@ class Configuration:
         self.ping_time = ping_time
         self.keypair_path = keypair_path
         self.nodes_path = nodes_path
+        self.no_save_nodes = no_save_nodes
 
         if self.log_level == "critical":
             self.log_level = logging.CRITICAL
