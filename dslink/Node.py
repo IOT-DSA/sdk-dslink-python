@@ -83,7 +83,7 @@ class Node:
             self.update_subscribers_values()
             if trigger_callback:
                 if hasattr(self.set_value_callback, "__call__"):
-                    self.set_value_callback(value)
+                    self.set_value_callback(node=self, value=value)
         return i
 
     def get_config(self, key):
