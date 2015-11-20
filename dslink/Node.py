@@ -30,6 +30,7 @@ class Node:
         self.subscribers = []
         self.streams = []
         self.removed_children = []
+        self.set_value_callback = None
         if parent is not None:
             self.name = name
             if parent.path.endswith("/"):
@@ -68,10 +69,11 @@ class Node:
             return Value.build_enum(self.value.value)
         return self.value.value
 
-    def set_value(self, value):
+    def set_value(self, value, trigger_callback=False):
         """
         Set the Node's value.
         :param value: Value to set.
+        :param trigger_callback: Set to true if you want to trigger the value set callback.
         :return: True if the value was set.
         """
         # Set value and updated timestamp
@@ -79,6 +81,9 @@ class Node:
         if i and (not self.standalone or self.link.active):
             # Update any subscribers
             self.update_subscribers_values()
+            if trigger_callback:
+                if hasattr(self.set_value_callback, "__call__"):
+                    self.set_value_callback(value)
         return i
 
     def get_config(self, key):
@@ -250,7 +255,7 @@ class Node:
         :param value: Value to set.
         """
         if path == "/" or path == self.path:
-            self.set_value(value)
+            self.set_value(value, trigger_callback=True)
         elif path.startswith("/$") or path.startswith(self.path + "/$"):
             self.set_config(path[2:], value)
         elif path.startswith("/@") or path.startswith(self.path + "/@"):
