@@ -112,8 +112,7 @@ class Node:
         self.attributes[key] = value
         self.update_subscribers()
 
-    def set_name(self, name):
-        # TODO(logangorence): Refactor to set_display_name for 0.3
+    def set_display_name(self, name):
         """
         Set the Node name.
         :param name: Node name.
@@ -313,21 +312,21 @@ class Node:
         Update all Subscribers of a Value change.
         """
         if self.value.has_value():
+            msg = {
+                "responses": []
+            }
             for s in self.subscribers:
-                self.link.wsp.sendMessage({
-                    "responses": [
-                        {
-                            "rid": 0,
-                            "updates": [
-                                [
-                                    s,
-                                    self.value.value,
-                                    self.value.updated_at.isoformat()
-                                ]
-                            ]
-                        }
+                msg["responses"].append({
+                    "rid": 0,
+                    "updates": [
+                        [
+                            s,
+                            self.value.value,
+                            self.value.updated_at.isoformat()
+                        ]
                     ]
                 })
+            self.link.wsp.sendMessage(msg)
 
     def add_subscriber(self, sid):
         """
@@ -365,6 +364,10 @@ class Node:
     def from_json(obj, root, name, link=None):
         """
         Convert a JSON object to a String
+        :param obj: Node Object.
+        :param root: Root Node.
+        :param name: Node Name.
+        :param link: Created Node's link.
         :return: Node that was created.
         """
         node = Node(name, root)

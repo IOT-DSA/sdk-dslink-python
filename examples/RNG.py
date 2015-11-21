@@ -1,7 +1,6 @@
 import random
 
 from dslink.DSLink import DSLink, Configuration, Node
-from dslink.Profile import Profile
 from twisted.internet import reactor
 
 
@@ -10,15 +9,15 @@ class RNGDSLink(DSLink):
         self.speed = 1
         self.rngs = {}
 
-        self.profile_manager.create_profile(Profile("rng"))
+        self.profile_manager.create_profile("rng")
 
-        self.profile_manager.create_profile(Profile("createRNG"))
+        self.profile_manager.create_profile("createRNG")
         self.profile_manager.register_callback("createRNG", self.create_rng)
 
-        self.profile_manager.create_profile(Profile("setSpeed"))
+        self.profile_manager.create_profile("setSpeed")
         self.profile_manager.register_callback("setSpeed", self.set_speed)
 
-        self.profile_manager.create_profile(Profile("deleteRNG"))
+        self.profile_manager.create_profile("deleteRNG")
         self.profile_manager.register_callback("deleteRNG", self.delete_rng)
 
         self.restore_rngs()
