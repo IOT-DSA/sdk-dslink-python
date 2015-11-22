@@ -332,7 +332,8 @@ class Node:
                         ]
                     ]
                 })
-            self.link.wsp.sendMessage(msg)
+            if len(msg["responses"]) is not 0:
+                self.link.wsp.sendMessage(msg)
 
     def add_subscriber(self, sid):
         """
