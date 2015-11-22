@@ -387,6 +387,8 @@ class Node:
                         node.set_type(obj[prop])
                     else:
                         node.set_config(prop, obj[prop])
+                elif prop.startswith("@"):
+                    node.set_attribute(prop, obj[prop])
                 else:
                     node.add_child(Node.from_json(obj[prop], node, prop))
 
