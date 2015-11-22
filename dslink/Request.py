@@ -57,7 +57,13 @@ class Request:
         elif self.method == "invoke":
             self.logger.debug("Invoke method")
             # TODO(logangorence) Handle not implemented profiles
-            columns, values = self.link.super_root.get(self.request["path"]).invoke(self.request["params"])
+            node_invoke = self.link.super_root.get(self.request["path"])
+            if node_invoke is not None:
+                columns, values = node_invoke.invoke(self.request["params"])
+            else:
+                self.logger.debug("Invoke on non-existant node %s." % self.request["path"])
+                columns = []
+                values = []
             # TODO(logangorence) Implement streaming invokes
             return Response({
                 "rid": self.rid,
