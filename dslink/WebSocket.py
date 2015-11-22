@@ -1,12 +1,10 @@
-import base64
-import hashlib
 import json
 import logging
-from threading import Timer, Thread
-from urlparse import urlparse
 
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
+from autobahn.websocket.protocol import parseWsUrl
 from twisted.internet import reactor
+from twisted.internet.protocol import ReconnectingClientFactory
 
 from dslink.Request import Request
 from dslink.Response import Response
@@ -22,34 +20,43 @@ class WebSocket:
         WebSocket Constructor.
         :param link: DSLink instance.
         """
-        self.link = link
-        self.factory = None
-        self.auth = str(link.salt) + link.shared_secret
-        self.auth = base64.urlsafe_b64encode(hashlib.sha256(self.auth).digest()).decode("utf-8").replace("=", "")
+        websocket_uri, url, port = link.get_url()
 
-        # TODO(logangorence): Properly strip and replace with WebSocket path
-        self.websocket_uri = self.link.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s&auth=%s" % (self.link.dsid, self.auth)
-        if self.link.config.token is not None:
-            self.websocket_uri += "&token=%s" % self.link.config.token
-        self.url = urlparse(self.websocket_uri)
-        if self.url.port is None:
-            self.port = 80
-        else:
-            self.port = self.url.port
-
-        DSAWebSocket.link = self.link
-        factory = WebSocketClientFactory(self.websocket_uri)
+        DSAWebSocket.link = link
+        factory = DSAWebSocketFactory(websocket_uri, link)
         factory.protocol = DSAWebSocket
 
-        self.link.logger.debug("Connecting WebSocket to %s" % self.websocket_uri)
-        reactor.connectTCP(self.url.hostname, self.port, factory)
+        link.logger.debug("Connecting WebSocket to %s" % websocket_uri)
+        reactor.connectTCP(url.hostname, port, factory)
+
+
+class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
+    def __init__(self, websocket_uri, link):
+        super(DSAWebSocketFactory, self).__init__(websocket_uri)
+        self.link = link
+    
+    def clientConnectionFailed(self, connector, reason):
+        print("Failed to connect, retrying...")
+        self.link.handshake.run_handshake()
+        self.reset_url()
+        self.retry(connector)
+
+    def clientConnectionLost(self, connector, unused_reason):
+        print("Connection lost, retrying...")
+        self.link.handshake.run_handshake()
+        self.reset_url()
+        self.retry(connector)
+
+    def reset_url(self):
+        websocket_uri, url, port = self.link.get_url()
+        self.url = websocket_uri
+        (self.isSecure, self.host, self.port, self.resource, self.path, self.params) = parseWsUrl(websocket_uri)
 
 
 class DSAWebSocket(WebSocketClientProtocol):
     """
     Autobahn implementation for DSA communications.
     """
-
     def __init__(self):
         """
             Constructor for DSAWebSocket.
@@ -86,7 +93,6 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         self.link.active = False
         self.logger.info("WebSocket Connection Lost")
-        # TODO(logangorence): Attempt reconnection
 
     def onMessage(self, payload, isBinary):
         """

@@ -1,8 +1,10 @@
 import argparse
 import base64
+import hashlib
 import json
 import logging
 import os.path
+from urlparse import urlparse
 from twisted.internet import reactor
 
 from dslink.Crypto import Keypair
@@ -27,6 +29,7 @@ class DSLink:
 
         # DSLink Configuration
         self.config = config
+        self.server_config = None
 
         # Load or create an empty Node structure
         self.super_root = self.load_nodes()
@@ -46,8 +49,7 @@ class DSLink:
         self.rid = 1
         self.keypair = Keypair(self.config.keypair_path)
         self.handshake = Handshake(self, self.keypair)
-        self.server_config = self.handshake.run_handshake()
-        self.salt = self.server_config["salt"]
+        self.handshake.run_handshake()
         self.dsid = self.handshake.get_dsid()
         self.shared_secret = self.keypair.keypair.get_ecdh_key(
             base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"]).encode("utf-8")))
@@ -225,6 +227,22 @@ class DSLink:
         defs.set_config("$hidden", True)
         defs.add_child(Node("profile", defs))
         self.super_root.add_child(defs)
+
+    def get_auth(self):
+        auth = str(self.server_config["salt"]) + self.shared_secret
+        auth = base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
+        return auth
+
+    def get_url(self):
+        websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s&auth=%s" % (self.dsid, self.get_auth())
+        if self.config.token is not None:
+            websocket_uri += "&token=%s" % self.config.token
+        url = urlparse(websocket_uri)
+        if url.port is None:
+            port = 80
+        else:
+            port = url.port
+        return websocket_uri, url, port
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):
