@@ -124,37 +124,40 @@ class Node:
         """
         Set invokable state.
         :param invokable: Invokable permit string or true for everyone can access.
-        :return: True on success.
         """
         if type(invokable) is str:
             self.set_config("$invokable", invokable)
-            return True
         elif type(invokable) is bool and invokable:
             self.set_config("$invokable", "read")
-            return True
-        return False
+        else:
+            raise ValueError("Invokable is not a string or boolean")
 
     def set_parameters(self, parameters):
         """
         Set parameters for action.
         :param parameters: Parameters for action.
-        :return: True on success.
         """
-        if type(parameters) is list:
-            self.set_config("$params", parameters)
-            return True
-        return False
+        if type(parameters) is not list:
+            raise ValueError("Parameters is not a list")
+        self.set_config("$params", parameters)
 
     def set_columns(self, columns):
         """
         Set return columns for action.
         :param columns: Columns for action.
-        :return: True on success.
         """
-        if type(columns) is list:
-            self.set_config("$columns", columns)
-            return True
-        return False
+        if type(columns) is not list:
+            raise ValueError("Columns is not a list")
+        self.set_config("$columns", columns)
+
+    def set_profile(self, profile):
+        """
+        Set the Node's profile.
+        :param profile: Node Profile.
+        """
+        if profile is not str:
+            raise ValueError("Passed profile is not a string")
+        self.set_config("$is", profile)
 
     def stream(self):
         """
