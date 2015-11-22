@@ -51,8 +51,6 @@ class DSLink:
         self.handshake = Handshake(self, self.keypair)
         self.handshake.run_handshake()
         self.dsid = self.handshake.get_dsid()
-        self.shared_secret = self.keypair.keypair.get_ecdh_key(
-            base64.urlsafe_b64decode(self.add_padding(self.server_config["tempKey"]).encode("utf-8")))
 
         # Connection setup
         self.wsp = None
