@@ -117,6 +117,8 @@ class Node:
         Set the Node name.
         :param name: Node name.
         """
+        if not isinstance(name, basestring):
+            raise ValueError("Passed profile is not a string")
         self.config["$name"] = name
         self.update_subscribers()
 
@@ -125,7 +127,7 @@ class Node:
         Set invokable state.
         :param invokable: Invokable permit string or true for everyone can access.
         """
-        if type(invokable) is str:
+        if isinstance(invokable, basestring):
             self.set_config("$invokable", invokable)
         elif type(invokable) is bool and invokable:
             self.set_config("$invokable", "read")
@@ -155,7 +157,7 @@ class Node:
         Set the Node's profile.
         :param profile: Node Profile.
         """
-        if profile is not str:
+        if not isinstance(profile, basestring):
             raise ValueError("Passed profile is not a string")
         self.set_config("$is", profile)
 
