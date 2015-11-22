@@ -291,8 +291,11 @@ class Node:
         :return: Columns and values
         """
         self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
-        # noinspection PyCallingNonCallable
-        return (self.config["$columns"] if "$columns" in self.config else []), self.link.profile_manager.get_profile(self.get_config("$is")).run_callback(CallbackParameters(self, params))
+        try:
+            # noinspection PyCallingNonCallable
+            return (self.config["$columns"] if "$columns" in self.config else []), self.link.profile_manager.get_profile(self.get_config("$is")).run_callback(CallbackParameters(self, params))
+        except ValueError:
+            return [], []
 
     def update_subscribers(self):
         """

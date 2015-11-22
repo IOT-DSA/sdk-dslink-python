@@ -26,6 +26,8 @@ class ProfileManager:
         profile_node.add_child(Node(profile, profile_node))
 
     def get_profile(self, profile):
+        if profile not in self.profiles:
+            raise ValueError("Profile %s doesn't exist" % profile)
         return self.profiles[profile]
 
     def register_callback(self, profile, callback):
