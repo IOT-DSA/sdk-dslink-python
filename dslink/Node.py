@@ -167,8 +167,10 @@ class Node:
         :return: Node stream.
         """
         out = []
-        for k in self.config:
-            out.append([k, self.config[k]])
+        for c in self.config:
+            out.append([c, self.config[c]])
+        for a in self.attributes:
+            out.append([a, self.config[a]])
         # TODO(logangorence): Investigate "RuntimeError: dictionary changed size during iteration" error.
         # TODO(logangorence): Use threading's Lock class for above issue.
         for child in self.children:
