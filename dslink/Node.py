@@ -170,7 +170,7 @@ class Node:
         for c in self.config:
             out.append([c, self.config[c]])
         for a in self.attributes:
-            out.append([a, self.config[a]])
+            out.append([a, self.attributes[a]])
         # TODO(logangorence): Investigate "RuntimeError: dictionary changed size during iteration" error.
         # TODO(logangorence): Use threading's Lock class for above issue.
         for child in self.children:
