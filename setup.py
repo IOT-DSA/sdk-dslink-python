@@ -14,7 +14,7 @@ if sys.version_info < (3, 3):
 
 setup(
     name="dslink",
-    version="0.5.6",
+    version="0.5.7",
     description="DSLink SDK for Python",
     url="http://github.com/IOT-DSA/sdk-dslink-python",
     author="Logan Gorence",
