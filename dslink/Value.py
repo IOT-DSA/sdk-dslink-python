@@ -55,7 +55,7 @@ class Value:
         :return: True if matches.
         """
         if self.type == "string":
-            return type(value) == str
+            return isinstance(value, basestring)
         elif self.type == "number":
             return type(value) == int or type(value) == long or type(value) == float
         elif self.type == "int":
