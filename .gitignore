@@ -7,3 +7,4 @@ dslink.egg-info/
 __pycache__
 *.pyc
 nodes.json
+nodes.json.bak
