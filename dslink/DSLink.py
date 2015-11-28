@@ -196,8 +196,10 @@ class DSLink:
                 nodes_file.close()
                 return Node.from_json(obj, None, "", link=self)
             except:
+                self.logger.error("Unable to load nodes data")
                 if os.path.exists(self.config.nodes_path + ".bak"):
                     try:
+                        self.logger.warn("Restoring backup nodes")
                         os.remove(self.config.nodes_path)
                         os.rename(self.config.nodes_path + ".bak", self.config.nodes_path)
                         nodes_file = open(self.config.nodes_path, "r")
@@ -205,7 +207,11 @@ class DSLink:
                         nodes_file.close()
                         return Node.from_json(obj, None, "", link=self)
                     except:
+                        self.logger.error("Unable to restore nodes, using default")
                         return self.get_default_nodes()
+                else:
+                    self.logger.warn("Backup nodes data doesn't exist, using default")
+                    return self.get_default_nodes()
         else:
             return self.get_default_nodes()
 
