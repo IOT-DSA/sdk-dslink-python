@@ -26,6 +26,7 @@ class DSLink:
         :param config: Configuration object.
         """
         self.active = False
+        self.nodes_changed = False
 
         # DSLink Configuration
         self.config = config
@@ -186,15 +187,27 @@ class DSLink:
             ]
         })
 
+    # noinspection PyBroadException
     def load_nodes(self):
         if os.path.exists(self.config.nodes_path):
-            file = open(self.config.nodes_path, "r")
-            obj = json.load(file)
-            file.close()
-            return Node.from_json(obj, None, "", link=self)
+            try:
+                nodes_file = open(self.config.nodes_path, "r")
+                obj = json.load(nodes_file)
+                nodes_file.close()
+                return Node.from_json(obj, None, "", link=self)
+            except:
+                if os.path.exists(self.config.nodes_path + ".bak"):
+                    try:
+                        os.remove(self.config.nodes_path)
+                        os.rename(self.config.nodes_path + ".bak", self.config.nodes_path)
+                        nodes_file = open(self.config.nodes_path, "r")
+                        obj = json.load(nodes_file)
+                        nodes_file.close()
+                        return Node.from_json(obj, None, "", link=self)
+                    except:
+                        return self.get_default_nodes()
         else:
-            node = self.get_default_nodes()
-            return node
+            return self.get_default_nodes()
 
     def save_timer(self):
         self.save_nodes()
@@ -202,9 +215,15 @@ class DSLink:
         reactor.callLater(5, self.save_timer)
 
     def save_nodes(self):
-        file = open(self.config.nodes_path, "w")
-        file.write(json.dumps(self.super_root.to_json(), sort_keys=True, indent=2))
-        file.close()
+        if self.nodes_changed:
+            if os.path.exists(self.config.nodes_path + ".bak"):
+                os.remove(self.config.nodes_path + ".bak")
+            if os.path.exists(self.config.nodes_path):
+                os.rename(self.config.nodes_path, self.config.nodes_path + ".bak")
+            nodes_file = open(self.config.nodes_path, "w")
+            nodes_file.write(json.dumps(self.super_root.to_json(), sort_keys=True, indent=2))
+            nodes_file.close()
+            self.nodes_changed = False
 
     def start(self):
         # Do nothing.

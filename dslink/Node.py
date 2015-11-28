@@ -50,7 +50,7 @@ class Node:
         Get the Node's value type.
         :return: Value type.
         """
-        return self.config["$type"]
+        return self.get_config("$type")
 
     def set_type(self, t):
         """
@@ -58,7 +58,7 @@ class Node:
         :param t: Type to set.
         """
         self.value.set_type(t)
-        self.config["$type"] = t
+        self.set_config("$type", t)
 
     def get_value(self):
         """
@@ -100,8 +100,17 @@ class Node:
         :param key: Key of config.
         :param value: Value of config.
         """
+        self.link.nodes_changed = True
         self.config[key] = value
         self.update_subscribers()
+
+    def get_attribute(self, key):
+        """
+        Get an attribute value.
+        :param key: Key of attribute.
+        :return: Value of attribute.
+        """
+        return self.attributes[key]
 
     def set_attribute(self, key, value):
         """
@@ -109,6 +118,7 @@ class Node:
         :param key: Key of attribute.
         :param value: Value of attribute.
         """
+        self.link.nodes_changed = True
         self.attributes[key] = value
         self.update_subscribers()
 
@@ -119,7 +129,7 @@ class Node:
         """
         if not isinstance(name, basestring):
             raise ValueError("Passed profile is not a string")
-        self.config["$name"] = name
+        self.set_config("$name", name)
         self.update_subscribers()
 
     def set_invokable(self, invokable):
@@ -195,6 +205,7 @@ class Node:
                 "name": child.name,
                 "change": "remove"
             })
+            self.link.nodes_changed = True
         del self.removed_children[:]
         return out
 
@@ -206,6 +217,7 @@ class Node:
         if child.name in self.children:
             raise ValueError("Child already exists in %s" % self.path)
         self.children[child.name] = child
+        self.link.nodes_changed = True
 
         if self.standalone or self.link.active:
             self.update_subscribers()
@@ -252,6 +264,8 @@ class Node:
                     child = path[1:]
                     return self.children[child]
             except KeyError:
+                import traceback
+                traceback.print_exc()
                 self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))
 
     def set_config_attr(self, path, value):
@@ -267,7 +281,9 @@ class Node:
         elif path.startswith("/@") or path.startswith(self.path + "/@"):
             self.set_attribute(path[2:], value)
         else:
-            self.get(path).set_config_attr(path, value)
+            node = self.get(path)
+            if node is not None:
+                node.set_config_attr(path, value)
 
     def remove_config_attr(self, path):
         """
