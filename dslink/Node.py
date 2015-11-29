@@ -291,7 +291,6 @@ class Node:
                     return self.children[child]
             except KeyError:
                 import traceback
-                traceback.print_exc()
                 self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))
 
     def set_config_attr(self, path, value):
@@ -431,7 +430,6 @@ class Node:
 
         if type(obj) is dict:
             for prop in obj:
-                print(prop)
                 if prop.startswith("$"):
                     if prop == "$type":
                         node.set_type(obj[prop])
