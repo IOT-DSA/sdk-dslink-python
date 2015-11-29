@@ -35,13 +35,17 @@ class Value:
             raise TypeError("%s is not an acceptable type" % t)
         self.type = t
 
-    def set_value(self, value):
+    def set_value(self, value, check=True):
         """
         Set the value.
         :param value: Value to set.
+        :param check: Set to false to skip type checking.
         :return: True if successful.
         """
-        if self.check_type(value):
+        set_val = True
+        if check:
+            set_val = self.check_type(value)
+        if set_val:
             self.value = value
             self.updated_at = datetime.now()
             return True

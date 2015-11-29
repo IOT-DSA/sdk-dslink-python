@@ -106,7 +106,6 @@ class RNGDSLink(DSLink):
             node = self.super_root.children[child]
             if node.get_config("$is") == "rng":
                 self.rngs[node.name] = node
-                node.set_value(1)
 
     def update_rng(self):
         for rng in self.rngs:

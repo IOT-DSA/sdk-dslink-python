@@ -32,13 +32,13 @@ class DSLink:
         self.config = config
         self.server_config = None
 
-        # Load or create an empty Node structure
-        self.super_root = self.load_nodes()
-        self.create_defs()
-
         # Logger setup
         self.logger = self.create_logger("DSLink", self.config.log_level)
         self.logger.info("Starting DSLink")
+
+        # Load or create an empty Node structure
+        self.super_root = self.load_nodes()
+        self.create_defs()
 
         # Managers setup
         self.subman = SubscriptionManager()
@@ -195,7 +195,8 @@ class DSLink:
                 obj = json.load(nodes_file)
                 nodes_file.close()
                 return Node.from_json(obj, None, "", link=self)
-            except:
+            except Exception, e:
+                print(e)
                 self.logger.error("Unable to load nodes data")
                 if os.path.exists(self.config.nodes_path + ".bak"):
                     try:

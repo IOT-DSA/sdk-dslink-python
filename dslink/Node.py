@@ -71,16 +71,18 @@ class Node:
             return Value.build_enum(self.value.value)
         return self.value.value
 
-    def set_value(self, value, trigger_callback=False):
+    def set_value(self, value, trigger_callback=False, check=True):
         """
         Set the Node's value.
         :param value: Value to set.
         :param trigger_callback: Set to true if you want to trigger the value set callback.
+        :param check: Turn type checking off if false.
         :return: True if the value was set.
         """
         # Set value and updated timestamp
-        i = self.value.set_value(value)
+        i = self.value.set_value(value, check)
         if i and (not self.standalone or self.link.active):
+            self.link.nodes_changed = True
             # Update any subscribers
             self.update_subscribers_values()
             if trigger_callback:
@@ -405,6 +407,8 @@ class Node:
             out[key] = self.config[key]
         for key in self.attributes:
             out[key] = self.attributes[key]
+        if self.value.has_value():
+            out["?value"] = self.value.value
         for child in self.children:
             if not self.children[child].transient:
                 out[child] = self.children[child].to_json()
@@ -427,6 +431,7 @@ class Node:
 
         if type(obj) is dict:
             for prop in obj:
+                print(prop)
                 if prop.startswith("$"):
                     if prop == "$type":
                         node.set_type(obj[prop])
@@ -434,6 +439,8 @@ class Node:
                         node.set_config(prop, obj[prop])
                 elif prop.startswith("@"):
                     node.set_attribute(prop, obj[prop])
+                elif prop == "?value":
+                    node.set_value(obj[prop], check=False)
                 else:
                     node.add_child(Node.from_json(obj[prop], node, prop))
 
