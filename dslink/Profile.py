@@ -8,12 +8,22 @@ class Profile:
         self.set_callback = None
 
     def run_callback(self, parameters):
+        """
+        Invoke the invoke callback.
+        :param parameters: Parameters for callback(Node.InvokeCallbackParameters).
+        :return: Results.
+        """
         if hasattr(self.invoke_callback, "__call__"):
             return self.invoke_callback(parameters)
         else:
             raise TypeError("Profile %s does not define an invoke callback" % self.name)
 
     def run_set_callback(self, parameters):
+        """
+        Invoke the set callback.
+        :param parameters: Parameters for callback(Node.SetCallbackParameters).
+        :return: Results.
+        """
         if hasattr(self.set_callback, "__call__"):
             return self.set_callback(parameters)
         else:
@@ -21,7 +31,15 @@ class Profile:
 
 
 class ProfileManager:
+    """
+    Class that holds Profiles.
+    """
+
     def __init__(self, link):
+        """
+        ProfileManager Constructor.
+        :param link: DSLink instance.
+        """
         self.profiles = {}
         self.link = link
 
