@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import logging
 
+from dslink.Permission import Permission
 from dslink.Response import Response
 from dslink.Value import Value
 
@@ -85,7 +86,10 @@ class Node:
             if trigger_callback:
                 if hasattr(self.set_value_callback, "__call__"):
                     self.set_value_callback(node=self, value=value)
-                self.link.profile_manager.get_profile(self.get_config("$is")).run_set_callback(SetCallbackParameters(self, value))
+                try:
+                    self.link.profile_manager.get_profile(self.get_config("$is")).run_set_callback(SetCallbackParameters(self, value))
+                except ValueError:
+                    pass
         return i
 
     def get_config(self, key):
@@ -181,6 +185,16 @@ class Node:
         if not isinstance(profile, basestring):
             raise ValueError("Passed profile is not a string")
         self.set_config("$is", profile)
+
+    def set_writable(self, permission):
+        """
+        Set the writable permission.
+        :param permission: Permission to set.
+        """
+        if isinstance(permission, basestring):
+            self.set_config("$writable", permission)
+        else:
+            raise ValueError("Passed permission is not string")
 
     def stream(self):
         """

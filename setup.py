@@ -1,5 +1,4 @@
 from setuptools import setup
-import sys
 
 requirements = [
     "autobahn",
@@ -8,9 +7,6 @@ requirements = [
     "twisted",
     "zope.interface"
 ]
-
-if sys.version_info < (3, 3):
-    requirements.append("enum34")
 
 setup(
     name="dslink",

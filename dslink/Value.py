@@ -29,13 +29,8 @@ class Value:
         :param t: Value type.
         :return: True on success.
         """
-        if t.startswith("enum[") and t.endswith("]"):
-            i = t[5:-1]
-            # noinspection PyBroadException
-            try:
-                i.split(",")
-            except Exception:
-                raise TypeError("Unusable enum %s" % t)
+        if self.is_enum(t):
+            pass
         elif t not in TYPES:
             raise TypeError("%s is not an acceptable type" % t)
         self.type = t
@@ -72,8 +67,8 @@ class Value:
         elif self.type == "bool":
             # TODO(logangorence): Implement enum-like bool. Examples: "bool[disabled,enabled]" or "bool[on,off]"
             return type(value) == bool
-        elif self.type == "enum":
-            return type(value) == list
+        elif self.is_enum(self.type):
+            return value in self.get_enum_values(self.type)
         # TODO(logangorence): Bytes value type.
         elif self.type == "map":
             return type(value) == map
@@ -95,3 +90,22 @@ class Value:
         # TODO(logangorence) Add support for Python Enum class.
         else:
             raise KeyError("build_enum called with non-list parameter.")
+
+    @staticmethod
+    def get_enum_values(enum):
+        if enum.startswith("enum[") and enum.endswith("]"):
+            return enum[5:-1].split(",")
+        else:
+            raise ValueError("Not an enum!")
+
+    @staticmethod
+    def is_enum(enum_type):
+        if enum_type.startswith("enum[") and enum_type.endswith("]"):
+            i = enum_type[5:-1]
+            # noinspection PyBroadException
+            try:
+                i.split(",")
+                return True
+            except:
+                return False
+        return False
