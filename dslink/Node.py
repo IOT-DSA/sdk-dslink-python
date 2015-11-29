@@ -30,6 +30,7 @@ class Node:
         self.subscribers = []
         self.streams = []
         self.removed_children = []
+        # TODO(logangorence): Deprecate for v0.6
         self.set_value_callback = None
         if parent is not None:
             self.name = name
@@ -84,6 +85,7 @@ class Node:
             if trigger_callback:
                 if hasattr(self.set_value_callback, "__call__"):
                     self.set_value_callback(node=self, value=value)
+                self.link.profile_manager.get_profile(self.get_config("$is")).run_set_callback(SetCallbackParameters(self, value))
         return i
 
     def get_config(self, key):
@@ -425,7 +427,14 @@ class Node:
         return node
 
 
+# TODO(logangorence): Rename to InvokeCallbackParameters for v0.6
 class CallbackParameters:
     def __init__(self, node, params):
         self.node = node
         self.params = params
+
+
+class SetCallbackParameters:
+    def __init__(self, node, value):
+        self.node = node
+        self.value = value

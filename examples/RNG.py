@@ -11,14 +11,14 @@ class RNGDSLink(DSLink):
 
         self.profile_manager.create_profile("rng")
 
-        self.profile_manager.create_profile("createRNG")
-        self.profile_manager.register_callback("createRNG", self.create_rng)
+        self.profile_manager.create_profile("create_rng")
+        self.profile_manager.register_callback("create_rng", self.create_rng)
 
-        self.profile_manager.create_profile("setSpeed")
-        self.profile_manager.register_callback("setSpeed", self.set_speed)
+        self.profile_manager.create_profile("set_speed")
+        self.profile_manager.register_callback("set_speed", self.set_speed)
 
-        self.profile_manager.create_profile("deleteRNG")
-        self.profile_manager.register_callback("deleteRNG", self.delete_rng)
+        self.profile_manager.create_profile("delete_rng")
+        self.profile_manager.register_callback("delete_rng", self.delete_rng)
 
         self.restore_rngs()
         self.update_rng()
@@ -26,9 +26,9 @@ class RNGDSLink(DSLink):
     def get_default_nodes(self):
         root = self.get_root_node()
 
-        create_rng = Node("createRNG", root)
-        create_rng.set_config("$name", "Create RNG")
-        create_rng.set_config("$is", "createRNG")
+        create_rng = Node("create_rng", root)
+        create_rng.set_display_name("Create RNG")
+        create_rng.set_config("$is", "create_rng")
         create_rng.set_invokable("config")
         create_rng.set_parameters([
             {
@@ -43,9 +43,9 @@ class RNGDSLink(DSLink):
             }
         ])
         root.add_child(create_rng)
-        set_speed = Node("setSpeed", root)
-        set_speed.set_config("$name", "Set Speed")
-        set_speed.set_config("$is", "setSpeed")
+        set_speed = Node("set_speed", root)
+        set_speed.set_display_name("Set Speed")
+        set_speed.set_config("$is", "set_speed")
         set_speed.set_invokable("config")
         set_speed.set_parameters([
             {
@@ -69,9 +69,10 @@ class RNGDSLink(DSLink):
             rng.set_config("$is", "rng")
             rng.set_type("number")
             rng.set_value(0)
+            rng.set_config("$writable", "config")
             self.super_root.add_child(rng)
             delete = Node("delete", rng)
-            delete.set_config("$is", "deleteRNG")
+            delete.set_config("$is", "delete_rng")
             delete.set_invokable("config")
             rng.add_child(delete)
             self.rngs[name] = rng
