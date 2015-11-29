@@ -246,7 +246,8 @@ class DSLink:
         return root
 
     def create_defs(self):
-        defs = Node("defs", self.super_root, no_export=True)
+        defs = Node("defs", self.super_root)
+        defs.set_transient(True)
         defs.set_config("$hidden", True)
         defs.add_child(Node("profile", defs))
         self.super_root.add_child(defs)

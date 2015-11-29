@@ -10,7 +10,7 @@ class Node:
     Represents a Node on the Node structure.
     """
 
-    def __init__(self, name, parent, standalone=False, no_export=False):
+    def __init__(self, name, parent, standalone=False):
         """
         Node Constructor.
         :param name: Node name.
@@ -22,7 +22,7 @@ class Node:
             self.link = parent.link
         self.parent = parent
         self.standalone = standalone
-        self.no_export = no_export
+        self.transient = False
         self.value = Value()
         self.children = {}
         self.config = OrderedDict([("$is", "node")])
@@ -121,6 +121,15 @@ class Node:
         self.link.nodes_changed = True
         self.attributes[key] = value
         self.update_subscribers()
+
+    def set_transient(self, transient):
+        """
+        Set the node to be transient, which won't serialize it.
+        :param transient: True if transient.
+        """
+        if type(transient) is not bool:
+            raise TypeError("Transient must be bool")
+        self.transient = transient
 
     def set_display_name(self, name):
         """
@@ -382,7 +391,7 @@ class Node:
         for key in self.attributes:
             out[key] = self.attributes[key]
         for child in self.children:
-            if not self.children[child].no_export:
+            if not self.children[child].transient:
                 out[child] = self.children[child].to_json()
 
         return out
