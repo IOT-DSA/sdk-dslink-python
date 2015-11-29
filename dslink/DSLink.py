@@ -189,6 +189,9 @@ class DSLink:
 
     # noinspection PyBroadException
     def load_nodes(self):
+        """
+        Load nodes.json file from disk, use backup if necessary. If that fails, then reset to defaults.
+        """
         if os.path.exists(self.config.nodes_path):
             try:
                 nodes_file = open(self.config.nodes_path, "r")
@@ -217,11 +220,17 @@ class DSLink:
             return self.get_default_nodes()
 
     def save_timer(self):
+        """
+        Save timer, called every 5 seconds by default.
+        """
         self.save_nodes()
         # Call again later...
         reactor.callLater(5, self.save_timer)
 
     def save_nodes(self):
+        """
+        Save the nodes.json out to disk if changed, and create the bak file.
+        """
         if self.nodes_changed:
             if os.path.exists(self.config.nodes_path + ".bak"):
                 os.remove(self.config.nodes_path + ".bak")
@@ -233,14 +242,26 @@ class DSLink:
             self.nodes_changed = False
 
     def start(self):
+        """
+        Called once the DSLink is initialized and connected.
+        Override this rather than the constructor.
+        """
         # Do nothing.
         self.logger.log("Running default init")
 
     # noinspection PyMethodMayBeStatic
     def get_default_nodes(self):
+        """
+        Create the default Node structure in this, override it.
+        :return:
+        """
         return self.get_root_node()
 
     def get_root_node(self):
+        """
+        Gets the default root Node. For use in get_default_nodes *ONLY*.
+        :return: Default root Node.
+        """
         root = Node("", None)
         root.link = self
 
