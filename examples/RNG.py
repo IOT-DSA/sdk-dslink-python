@@ -69,7 +69,6 @@ class RNGDSLink(DSLink):
             rng.set_config("$is", "rng")
             rng.set_type("number")
             rng.set_value(0)
-            rng.set_config("$writable", "config")
             self.super_root.add_child(rng)
             delete = Node("delete", rng)
             delete.set_config("$is", "delete_rng")
