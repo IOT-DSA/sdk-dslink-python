@@ -29,7 +29,14 @@ class Value:
         :param t: Value type.
         :return: True on success.
         """
-        if t not in TYPES:
+        if t.startswith("enum[") and t.endswith("]"):
+            i = t[5:-1]
+            # noinspection PyBroadException
+            try:
+                i.split(",")
+            except Exception:
+                raise TypeError("Unusable enum %s" % t)
+        elif t not in TYPES:
             raise TypeError("%s is not an acceptable type" % t)
         self.type = t
 
