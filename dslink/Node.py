@@ -203,12 +203,11 @@ class Node:
                 }
             else:
                 val = {}
-            l = len(child.path.split("/")) - 1
             i = dict(child.config)
             i.update(child.attributes)
             i.update(val)
             out.append([
-                child.path.split("/")[l],
+                child.name,
                 i
             ])
         for child in self.removed_children:
