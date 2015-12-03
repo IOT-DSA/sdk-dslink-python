@@ -288,7 +288,10 @@ class Node:
                     return self.children[child].get(path[i:])
                 except ValueError:
                     child = path[1:]
-                    return self.children[child]
+                    try:
+                        return self.children[child]
+                    except KeyError:
+                        return None
             except KeyError:
                 import traceback
                 self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))

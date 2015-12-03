@@ -42,6 +42,7 @@ class Keypair:
                                       pubkey_x=keys["pubkey_x"],
                                       pubkey_y=keys["pubkey_y"],
                                       raw_privkey=keys["privkey"])
+        file.close()
 
     def save_keys(self):
         """
@@ -53,3 +54,4 @@ class Keypair:
             "pubkey_y": self.keypair.pubkey_y,
             "privkey": self.keypair.privkey
         }, file)
+        file.close()
