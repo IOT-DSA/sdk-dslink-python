@@ -48,5 +48,7 @@ class Handshake:
                 cooldown += 1
         # noinspection PyUnboundLocalVariable
         self.link.server_config = json.loads(response.text)
-        self.link.shared_secret = self.keypair.keypair.get_ecdh_key(
-            base64.urlsafe_b64decode(self.link.add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
+        if "tempKey" in self.link.server_config:
+            self.link.needs_auth = True
+            self.link.shared_secret = self.keypair.keypair.get_ecdh_key(
+                base64.urlsafe_b64decode(self.link.add_padding(self.link.server_config["tempKey"]).encode("utf-8")))

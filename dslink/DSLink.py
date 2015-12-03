@@ -27,6 +27,7 @@ class DSLink:
         """
         self.active = False
         self.nodes_changed = False
+        self.needs_auth = False
 
         # DSLink Configuration
         self.config = config
@@ -280,7 +281,9 @@ class DSLink:
         return auth
 
     def get_url(self):
-        websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s&auth=%s" % (self.dsid, self.get_auth())
+        websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s" % self.dsid
+        if self.needs_auth:
+            websocket_uri += "&auth=%s" % self.get_auth()
         if self.config.token is not None:
             websocket_uri += "&token=%s" % self.config.token
         url = urlparse(websocket_uri)
