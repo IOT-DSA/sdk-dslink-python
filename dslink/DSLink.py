@@ -239,6 +239,7 @@ class DSLink:
                 os.rename(self.config.nodes_path, self.config.nodes_path + ".bak")
             nodes_file = open(self.config.nodes_path, "w")
             nodes_file.write(json.dumps(self.super_root.to_json(), sort_keys=True, indent=2))
+            nodes_file.flush()
             os.fsync(nodes_file.fileno())
             nodes_file.close()
             self.nodes_changed = False
