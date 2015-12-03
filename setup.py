@@ -10,7 +10,7 @@ requirements = [
 
 setup(
     name="dslink",
-    version="0.5.15",
+    version="0.5.16",
     description="DSLink SDK for Python",
     url="http://github.com/IOT-DSA/sdk-dslink-python",
     author="Logan Gorence",
