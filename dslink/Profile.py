@@ -10,7 +10,7 @@ class Profile:
     def run_callback(self, parameters):
         """
         Invoke the invoke callback.
-        :param parameters: Parameters for callback(Node.InvokeCallbackParameters).
+        :param parameters: Parameters for callback(Node, Parameters).
         :return: Results.
         """
         if hasattr(self.invoke_callback, "__call__"):
@@ -21,7 +21,7 @@ class Profile:
     def run_set_callback(self, parameters):
         """
         Invoke the set callback.
-        :param parameters: Parameters for callback(Node.SetCallbackParameters).
+        :param parameters: Parameters for callback(Node, Value).
         :return: Results.
         """
         if hasattr(self.set_callback, "__call__"):

@@ -1,5 +1,5 @@
 from dslink.DSLink import DSLink, Configuration
-from dslink.Node import Node, CallbackParameters, SetCallbackParameters
+from dslink.Node import Node
 from dslink.Permission import Permission
 from dslink.Profile import Profile
 from dslink.Requester import Requester

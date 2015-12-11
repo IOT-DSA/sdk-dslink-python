@@ -88,7 +88,7 @@ class Node:
                 if hasattr(self.set_value_callback, "__call__"):
                     self.set_value_callback(node=self, value=value)
                 try:
-                    self.link.profile_manager.get_profile(self.get_config("$is")).run_set_callback(SetCallbackParameters(self, value))
+                    self.link.profile_manager.get_profile(self.get_config("$is")).run_set_callback((self, value))
                 except ValueError:
                     pass
         return i
@@ -349,7 +349,7 @@ class Node:
         self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         try:
             # noinspection PyCallingNonCallable
-            return (self.config["$columns"] if "$columns" in self.config else []), self.link.profile_manager.get_profile(self.get_config("$is")).run_callback(CallbackParameters(self, params))
+            return (self.config["$columns"] if "$columns" in self.config else []), self.link.profile_manager.get_profile(self.get_config("$is")).run_callback((self, params))
         except ValueError:
             return [], []
 
@@ -501,16 +501,3 @@ class RemoteNode(Node):
                     elif i.startswith("@"):
                         child.set_attribute(i, v[i])
                 Node.add_child(self, child)
-
-
-# TODO(logangorence): Rename to InvokeCallbackParameters for v0.6
-class CallbackParameters:
-    def __init__(self, node, params):
-        self.node = node
-        self.params = params
-
-
-class SetCallbackParameters:
-    def __init__(self, node, value):
-        self.node = node
-        self.value = value
