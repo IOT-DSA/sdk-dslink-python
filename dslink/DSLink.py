@@ -11,6 +11,7 @@ from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
 from dslink.Node import Node
 from dslink.Profile import ProfileManager
+from dslink.Requester import Requester
 from dslink.WebSocket import WebSocket
 
 
@@ -44,11 +45,11 @@ class DSLink:
         # Managers setup
         self.subman = SubscriptionManager()
         self.strman = StreamManager()
-        self.reqman = RequestManager()
         self.profile_manager = ProfileManager(self)
+        if self.config.requester:
+            self.requester = Requester(self)
 
         # DSLink setup
-        self.rid = 1
         self.keypair = Keypair(self.config.keypair_path)
         self.handshake = Handshake(self, self.keypair)
         self.handshake.run_handshake()
@@ -67,126 +68,6 @@ class DSLink:
         self.logger.info("Started DSLink")
         self.logger.debug("Starting reactor")
         reactor.run()
-
-    def get_next_rid(self):
-        """
-        Get the next rid in the sequence. Initially starts from 1.
-        :return: Next rid in sequence.
-        """
-        r = self.rid
-        self.rid += 1
-        return r
-
-    def list(self, path, callback):
-        """
-        List a remote node.
-        :param path: Request path.
-        """
-        if not self.config.requester:
-            raise ValueError("Requester is not enabled.")
-        rid = self.get_next_rid()
-        self.wsp.sendMessage({
-            "requests": [
-                {
-                    "rid": rid,
-                    "method": "list",
-                    "path": path
-                }
-            ]
-        }, self)
-        self.reqman.start_request(rid, callback)
-
-    def set(self, path, value, permit=None, callback=None):
-        """
-        Set a remote value.
-        :param path: Path of value.
-        :param value: Value to set.
-        :param permit: Maximum permission of set.
-        :param callback: Response callback.
-        """
-        if not self.config.requester:
-            raise ValueError("Requester is not enabled.")
-        rid = self.get_next_rid()
-        i = {
-            "rid": rid,
-            "method": "set",
-            "path": path,
-            "value": value
-        }
-        if permit is not None:
-            i["permit"] = permit
-        self.wsp.sendMessage({
-            "requests": [
-                i
-            ]
-        })
-        if callback:
-            self.reqman.start_request(rid, callback)
-
-    def remove(self, path, callback=None):
-        """
-        Remove a remote value.
-        :param path: Path of value.
-        :param callback: Response callback.
-        """
-        if not self.config.requester:
-            raise ValueError("Requester is not enabled.")
-        rid = self.get_next_rid()
-        self.wsp.sendMessage({
-            "rid": rid,
-            "method": "remove",
-            "path": path
-        })
-        if callback:
-            self.reqman.start_request(rid, callback)
-
-    def invoke(self, path, permit=None, params=None, callback=None):
-        """
-        Invoke a remote method.
-        :param path: Path of node.
-        :param permit: Maximum permission of invoke.
-        :param params: Parameters of invoke.
-        :param callback: Response callback.
-        """
-        if not self.config.requester:
-            raise ValueError("Requester is not enabled.")
-        rid = self.get_next_rid()
-        i = {
-            "rid": rid,
-            "method": "invoke",
-            "path": path
-        }
-        if permit is not None:
-            i["permit"] = permit
-        if params is not None:
-            i["params"] = params
-        self.wsp.sendMessage({
-            "requests": [
-                i
-            ]
-        })
-        if callback:
-            self.reqman.start_request(rid, callback)
-
-    # TODO(logangorence): Subscribe method.
-
-    # TODO(logangorence): Unsubscribe method.
-
-    def close(self, rid):
-        """
-        Close a stream.
-        :param rid: ID of request.
-        """
-        if not self.config.requester:
-            raise ValueError("Requester is not enabled.")
-        self.wsp.sendMessage({
-            "requests": [
-                {
-                    "rid": rid,
-                    "method": "close"
-                }
-            ]
-        })
 
     # noinspection PyBroadException
     def load_nodes(self):
@@ -389,41 +270,6 @@ class StreamManager:
             logging.getLogger("DSLink").debug("Unknown rid %s" % rid)
 
 
-class RequestManager:
-    """
-    Manages outgoing requests and callbacks.
-    """
-
-    def __init__(self):
-        """
-        Constructor of RequestManager.
-        """
-        self.requests = {}
-
-    def start_request(self, rid, callback):
-        """
-        Start a Request.
-        :param rid: RID of Request.
-        :param callback: Callback to invoke.
-        """
-        self.requests[rid] = callback
-
-    def stop_request(self, rid):
-        """
-        Stop a Request.
-        :param rid: RID of Request.
-        """
-        del self.requests[rid]
-
-    def invoke_request(self, rid, data):
-        """
-        Invoke a Request.
-        :param rid: RID of Request.
-        :param data: Data of Request.
-        """
-        self.requests[rid](data)
-
-
 class Configuration:
     """
     Provides configuration to the DSLink.
@@ -439,8 +285,7 @@ class Configuration:
         :param ping_time: Time between pings, default is 30.
         """
         if not responder and not requester:
-            print "DSLink is neither responder nor requester. Exiting now."
-            exit(1)
+            raise ValueError("DSLink is neither responder nor requester. Exiting now.")
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")

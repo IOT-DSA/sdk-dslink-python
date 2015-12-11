@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import logging
 
-from dslink.Permission import Permission
 from dslink.Response import Response
 from dslink.Value import Value
 
@@ -81,8 +80,8 @@ class Node:
         """
         # Set value and updated timestamp
         i = self.value.set_value(value, check)
-        if i and (not self.standalone or self.link.active):
-            self.link.nodes_changed = True
+        if i and (not self.standalone or self.link_is_active()):
+            self.nodes_changed()
             # Update any subscribers
             self.update_subscribers_values()
             if trigger_callback:
@@ -108,7 +107,7 @@ class Node:
         :param key: Key of config.
         :param value: Value of config.
         """
-        self.link.nodes_changed = True
+        self.nodes_changed()
         self.config[key] = value
         self.update_subscribers()
 
@@ -126,7 +125,7 @@ class Node:
         :param key: Key of attribute.
         :param value: Value of attribute.
         """
-        self.link.nodes_changed = True
+        self.nodes_changed()
         self.attributes[key] = value
         self.update_subscribers()
 
@@ -138,6 +137,15 @@ class Node:
         if type(transient) is not bool:
             raise TypeError("Transient must be bool")
         self.transient = transient
+
+    def nodes_changed(self):
+        """
+        Set the Node structure as changed.
+        """
+        self.link.nodes_changed = True
+
+    def link_is_active(self):
+        return self.link.active
 
     def set_display_name(self, name):
         """
@@ -231,7 +239,7 @@ class Node:
                 "name": child.name,
                 "change": "remove"
             })
-            self.link.nodes_changed = True
+            self.nodes_changed()
         del self.removed_children[:]
         return out
 
@@ -243,9 +251,9 @@ class Node:
         if child.name in self.children:
             raise ValueError("Child already exists in %s" % self.path)
         self.children[child.name] = child
-        self.link.nodes_changed = True
+        self.nodes_changed()
 
-        if self.standalone or self.link.active:
+        if self.standalone or self.link_is_active():
             self.update_subscribers()
 
     def remove_child(self, name):
@@ -446,6 +454,53 @@ class Node:
                     node.add_child(Node.from_json(obj[prop], node, prop))
 
         return node
+
+
+class RemoteNode(Node):
+    def __init__(self, name, parent):
+        Node.__init__(self, name, parent)
+
+    def set_value(self, value, trigger_callback=False, check=True):
+        # TODO(logangorence): Set value.
+        pass
+
+    def update_subscribers(self):
+        pass
+
+    def update_subscribers_values(self):
+        pass
+
+    def add_child(self, child):
+        pass
+
+    def add_subscriber(self, sid):
+        pass
+
+    def remove_subscriber(self, sid):
+        pass
+
+    def nodes_changed(self):
+        pass
+
+    def link_is_active(self):
+        return False
+
+    def from_serialized(self, serialized):
+        for a in serialized:
+            k = a[0]
+            v = a[1]
+            if k.startswith("$"):
+                self.set_config(k, v)
+            elif k.startswith("@"):
+                self.set_attribute(k, v)
+            else:
+                child = RemoteNode(k, self)
+                for i in v:
+                    if i.startswith("$"):
+                        child.set_config(i, v[i])
+                    elif i.startswith("@"):
+                        child.set_attribute(i, v[i])
+                Node.add_child(self, child)
 
 
 # TODO(logangorence): Rename to InvokeCallbackParameters for v0.6
