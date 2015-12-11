@@ -5,8 +5,9 @@ class Requester:
     def __init__(self, link):
         self.link = link
         self.request_manager = RequestManager()
+        self.subscription_manager = RemoteSubscriptionManager()
         self.rid = 1
-        self.sub_paths = {}
+        self.sid = 0
 
     def get_next_rid(self):
         """
@@ -16,6 +17,15 @@ class Requester:
         r = self.rid
         self.rid += 1
         return r
+
+    def get_next_sid(self):
+        """
+        Get the next sid in the sequence. Initially starts from 0.
+        :return: Next sid in the sequence.
+        """
+        s = self.sid
+        self.sid += 1
+        return s
 
     def list(self, path, callback):
         """
@@ -109,15 +119,35 @@ class Requester:
         :param path: Path of Node.
         :param callback: Response callback.
         """
-        pass
+        if type(path) is str:
+            rid = self.get_next_rid()
+            sid = self.get_next_sid()
+            self.subscription_manager.subscribe(sid, path, callback)
+            self.link.wsp.sendMessage({
+                "requests": [
+                    {
+                        "rid": rid,
+                        "method": "subscribe",
+                        "paths": [
+                            {
+                                "path": path,
+                                "sid": sid
+                            }
+                        ]
+                    }
+                ]
+            })
+        else:
+            raise ValueError("Unsupported path type.")
 
     def unsubscribe(self, path):
         """
         Unsubscribe to a remote Node.
         :param path: Path of Node.
         """
-        if path in self.sub_paths:
-            sid = self.sub_paths[path]
+        if type(path) is str:
+            sid = self.subscription_manager.get_sid_by_path(path)
+            self.subscription_manager.unsubscribe(sid)
             rid = self.get_next_rid()
             self.link.wsp.sendMessage({
                 "requests": [
@@ -131,7 +161,7 @@ class Requester:
                 ]
             })
         else:
-            raise ValueError("Path is not subscribed.")
+            raise ValueError("Unsupported path type.")
 
     def close(self, rid):
         """
@@ -193,3 +223,53 @@ class RequestManager:
         if request["type"] == "list":
             response = ListResponse(data, request["metadata"]["path"])
         request["callback"](response)
+
+
+class RemoteSubscriptionManager:
+    def __init__(self):
+        self.subscriptions = {}
+
+    def subscribe(self, sid, path, callback):
+        """
+        Subscribe to a Node.
+        :param sid: Subscription ID.
+        :param path: Path of Node.
+        :param callback: Callback to run with value.
+        """
+        if not hasattr(callback, "__call__"):
+            raise ValueError("Passed callback is not callable.")
+        elif sid in self.subscriptions:
+            raise ValueError("Sid %s is already in use." % sid)
+        self.subscriptions[sid] = {
+            "path": path,
+            "callback": callback
+        }
+
+    def unsubscribe(self, sid):
+        """
+        Unsubscribe from a Node.
+        :param sid: Subscription ID.
+        """
+        if sid not in self.subscriptions:
+            raise ValueError("Sid %s not in use." % sid)
+        del self.subscriptions[sid]
+
+    def get_sid_by_path(self, path):
+        """
+        Get a Subscription ID by path.
+        :param path: Path of Node.
+        :return: Subscription ID.
+        """
+        for sid in self.subscriptions:
+            meta = self.subscriptions[sid]
+            if meta["path"] == path:
+                return sid
+
+    def run_callback(self, sid, value, time):
+        """
+        Run a subscription's callback.
+        :param sid: Subscription ID.
+        :param value: Value.
+        :param time: Updated at time.
+        """
+        self.subscriptions[sid]["callback"]((value, time))

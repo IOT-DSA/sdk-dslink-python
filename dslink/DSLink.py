@@ -43,7 +43,7 @@ class DSLink:
         self.create_defs()
 
         # Managers setup
-        self.subman = SubscriptionManager()
+        self.subman = LocalSubscriptionManager()
         self.strman = StreamManager()
         self.profile_manager = ProfileManager(self)
         if self.config.requester:
@@ -206,7 +206,7 @@ class DSLink:
         return string
 
 
-class SubscriptionManager:
+class LocalSubscriptionManager:
     """
     Manages subscriptions to Nodes.
     """

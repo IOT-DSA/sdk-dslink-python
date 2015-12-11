@@ -19,3 +19,9 @@ class ListResponse(Response):
         node.link = None
         node.from_serialized(update)
         return node
+
+
+class SubscriptionResponse(Response):
+    def __init__(self, json, path):
+        # TODO(logangorence): Close response.
+        Response.__init__(self, json)

@@ -133,7 +133,13 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         for response in responses:
             Response(response)
-            if response["rid"] in self.link.requester.request_manager.requests:
+            if response["rid"] is 0:
+                for update in response["updates"]:
+                    sid = update[0]
+                    val = update[1]
+                    time = update[2]
+                    self.link.requester.subscription_manager.run_callback(sid, val, time)
+            elif response["rid"] in self.link.requester.request_manager.requests:
                 self.link.requester.request_manager.invoke_request(response["rid"], response)
 
     def sendMessage(self, payload, isBinary=False, fragmentSize=None, sync=False, doNotCompress=False):
