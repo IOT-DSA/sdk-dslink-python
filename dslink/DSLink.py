@@ -1,9 +1,7 @@
 import argparse
 import base64
 import hashlib
-import json
 import logging
-import os.path
 from urlparse import urlparse
 from twisted.internet import reactor
 
@@ -27,7 +25,6 @@ class DSLink:
         :param config: Configuration object.
         """
         self.active = False
-        self.nodes_changed = False
         self.needs_auth = False
 
         # DSLink Configuration
@@ -38,15 +35,12 @@ class DSLink:
         self.logger = self.create_logger("DSLink", self.config.log_level)
         self.logger.info("Starting DSLink")
 
-        # Load or create an empty Node structure
-        self.super_root = self.load_nodes()
-        self.create_defs()
-
         # Requester and Responder setup
         if self.config.requester:
             self.requester = Requester(self)
         if self.config.responder:
             self.responder = Responder(self)
+            self.responder.start()
 
         # DSLink setup
         self.keypair = Keypair(self.config.keypair_path)
@@ -58,79 +52,18 @@ class DSLink:
         self.wsp = None
         self.websocket = WebSocket(self)
 
-        # Start saving timer
-        if not self.config.no_save_nodes:
-            reactor.callLater(1, self.save_timer)
-
-        reactor.callLater(1, self.start)
+        self.call_later(1, self.start)
 
         self.logger.info("Started DSLink")
         self.logger.debug("Starting reactor")
         reactor.run()
-
-    # noinspection PyBroadException
-    def load_nodes(self):
-        """
-        Load nodes.json file from disk, use backup if necessary. If that fails, then reset to defaults.
-        """
-        if os.path.exists(self.config.nodes_path):
-            try:
-                nodes_file = open(self.config.nodes_path, "r")
-                obj = json.load(nodes_file)
-                nodes_file.close()
-                return Node.from_json(obj, None, "", link=self)
-            except Exception, e:
-                print(e)
-                self.logger.error("Unable to load nodes data")
-                if os.path.exists(self.config.nodes_path + ".bak"):
-                    try:
-                        self.logger.warn("Restoring backup nodes")
-                        os.remove(self.config.nodes_path)
-                        os.rename(self.config.nodes_path + ".bak", self.config.nodes_path)
-                        nodes_file = open(self.config.nodes_path, "r")
-                        obj = json.load(nodes_file)
-                        nodes_file.close()
-                        return Node.from_json(obj, None, "", link=self)
-                    except:
-                        self.logger.error("Unable to restore nodes, using default")
-                        return self.get_default_nodes()
-                else:
-                    self.logger.warn("Backup nodes data doesn't exist, using default")
-                    return self.get_default_nodes()
-        else:
-            return self.get_default_nodes()
-
-    def save_timer(self):
-        """
-        Save timer, called every 5 seconds by default.
-        """
-        self.save_nodes()
-        # Call again later...
-        reactor.callLater(5, self.save_timer)
-
-    def save_nodes(self):
-        """
-        Save the nodes.json out to disk if changed, and create the bak file.
-        """
-        if self.nodes_changed:
-            if os.path.exists(self.config.nodes_path + ".bak"):
-                os.remove(self.config.nodes_path + ".bak")
-            if os.path.exists(self.config.nodes_path):
-                os.rename(self.config.nodes_path, self.config.nodes_path + ".bak")
-            nodes_file = open(self.config.nodes_path, "w")
-            nodes_file.write(json.dumps(self.super_root.to_json(), sort_keys=True, indent=2))
-            nodes_file.flush()
-            os.fsync(nodes_file.fileno())
-            nodes_file.close()
-            self.nodes_changed = False
 
     def start(self):
         """
         Called once the DSLink is initialized and connected.
         Override this rather than the constructor.
         """
-        # Do nothing.
-        self.logger.log("Running default init")
+        pass
 
     # noinspection PyMethodMayBeStatic
     def get_default_nodes(self):
@@ -149,13 +82,6 @@ class DSLink:
         root.link = self
 
         return root
-
-    def create_defs(self):
-        defs = Node("defs", self.super_root)
-        defs.set_transient(True)
-        defs.set_config("$hidden", True)
-        defs.add_child(Node("profile", defs))
-        self.super_root.add_child(defs)
 
     def get_auth(self):
         auth = str(self.server_config["salt"]) + self.shared_secret
@@ -204,6 +130,17 @@ class DSLink:
             string += "="
         return string
 
+    @staticmethod
+    def call_later(delay, call, *args, **kw):
+        """
+        Call function later.
+        :param delay: Seconds to delay.
+        :param call: Method to call.
+        :param args: Arguments.
+        :return: DelayedCall instance.
+        """
+        return reactor.callLater(delay, call, *args, **kw)
+
 
 class Configuration:
     """
@@ -215,12 +152,15 @@ class Configuration:
         """
         Object that contains configuration for the DSLink.
         :param name: DSLink name.
-        :param responder: True if acts as responder, default is False.
-        :param requester: True if acts as requester, default is False.
+        :param responder: True if responder, default is False.
+        :param requester: True if requester, default is False.
         :param ping_time: Time between pings, default is 30.
+        :param keypair_path: Path to save keypair, default is ".keys".
+        :param nodes_path: Path to save nodes.json, default is "nodes.json".
+        :param no_save_nodes: Don't use nodes.json, default is False.
         """
         if not responder and not requester:
-            raise ValueError("DSLink is neither responder nor requester. Exiting now.")
+            raise ValueError("DSLink is neither responder nor requester.")
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")

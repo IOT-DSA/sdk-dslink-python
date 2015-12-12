@@ -22,7 +22,7 @@ class Request:
         """
         if self.method == "list":
             self.logger.debug("List method")
-            node = self.link.super_root.get(self.request["path"])
+            node = self.link.responder.super_root.get(self.request["path"])
             if node is not None:
                 self.link.responder.stream_manager.open_stream(node, self.rid)
                 return Response({
@@ -38,7 +38,7 @@ class Request:
         elif self.method == "subscribe":
             self.logger.debug("Subscribe method")
             for sub in self.request["paths"]:
-                node = self.link.super_root.get(sub["path"])
+                node = self.link.responder.super_root.get(sub["path"])
                 if node is not None:
                     self.link.responder.subscription_manager.subscribe(node, sub["sid"])
                     self.logger.debug("Subscription added")
@@ -57,7 +57,7 @@ class Request:
         elif self.method == "invoke":
             self.logger.debug("Invoke method")
             # TODO(logangorence) Handle not implemented profiles
-            node_invoke = self.link.super_root.get(self.request["path"])
+            node_invoke = self.link.responder.super_root.get(self.request["path"])
             if node_invoke is not None:
                 columns, values = node_invoke.invoke(self.request["params"])
             else:
@@ -75,14 +75,14 @@ class Request:
             self.logger.debug("Set method")
             # TODO(logangorence) Handle permit
             # TODO(logangorence) Handle improper value type
-            self.link.super_root.set_config_attr(self.request["path"], self.request["value"])
+            self.link.responder.super_root.set_config_attr(self.request["path"], self.request["value"])
             return Response({
                 "rid": self.rid,
                 "stream": "closed"
             })
         elif self.method == "remove":
             self.logger.debug("Remove method")
-            self.link.super_root.remove_config_attr(self.request["path"])
+            self.link.responder.super_root.remove_config_attr(self.request["path"])
             return Response({
                 "rid": self.rid,
                 "stream": "closed"

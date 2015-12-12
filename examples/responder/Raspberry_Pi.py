@@ -8,11 +8,11 @@ from twisted.internet import reactor
 class RaspberryPiDSLink(DSLink):
     def start(self):
 
-        self.cpu_usage = self.super_root.get("/cpu_usage")
-        self.cpu_temp = self.super_root.get("/cpu_temp")
-        self.mem_avail = self.super_root.get("/mem_avail")
-        self.mem_total = self.super_root.get("/mem_total")
-        self.mem_used = self.super_root.get("/mem_used")
+        self.cpu_usage = self.responder.super_root.get("/cpu_usage")
+        self.cpu_temp = self.responder.super_root.get("/cpu_temp")
+        self.mem_avail = self.responder.super_root.get("/mem_avail")
+        self.mem_total = self.responder.super_root.get("/mem_total")
+        self.mem_used = self.responder.super_root.get("/mem_used")
 
         self.update_data()
 

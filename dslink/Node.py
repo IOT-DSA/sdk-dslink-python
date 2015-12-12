@@ -142,9 +142,13 @@ class Node:
         """
         Set the Node structure as changed.
         """
-        self.link.nodes_changed = True
+        self.link.responder.nodes_changed = True
 
     def link_is_active(self):
+        """
+        Check if the link is active.
+        :return: True if link is active.
+        """
         return self.link.active
 
     def set_display_name(self, name):
