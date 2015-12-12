@@ -6,7 +6,8 @@ class ListDSLink(dslink.DSLink):
         self.requester.list("/", self.list)
 
     def list(self, listresponse):
-        print(listresponse.node.children)
+        for child in listresponse.node.children:
+            print(child)
 
 if __name__ == "__main__":
     ListDSLink(dslink.Configuration(name="ListExample", requester=True))

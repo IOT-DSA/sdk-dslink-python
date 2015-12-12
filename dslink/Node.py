@@ -491,6 +491,8 @@ class RemoteNode(Node):
 
     def from_serialized(self, serialized):
         for a in serialized:
+            if type(a) is not list:
+                continue
             k = a[0]
             v = a[1]
             if k.startswith("$"):
