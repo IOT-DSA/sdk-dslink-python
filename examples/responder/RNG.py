@@ -23,10 +23,8 @@ class RNGDSLink(DSLink):
         self.restore_rngs()
         self.update_rng()
 
-    def get_default_nodes(self):
-        root = self.get_root_node()
-
-        create_rng = Node("create_rng", root)
+    def get_default_nodes(self, super_root):
+        create_rng = Node("create_rng", super_root)
         create_rng.set_display_name("Create RNG")
         create_rng.set_config("$is", "create_rng")
         create_rng.set_invokable("config")
@@ -42,8 +40,8 @@ class RNGDSLink(DSLink):
                 "type": "bool"
             }
         ])
-        root.add_child(create_rng)
-        set_speed = Node("set_speed", root)
+        super_root.add_child(create_rng)
+        set_speed = Node("set_speed", super_root)
         set_speed.set_display_name("Set Speed")
         set_speed.set_config("$is", "set_speed")
         set_speed.set_invokable("config")
@@ -59,8 +57,8 @@ class RNGDSLink(DSLink):
                 "type": "bool"
             }
         ])
-        root.add_child(set_speed)
-        return root
+        super_root.add_child(set_speed)
+        return super_root
 
     def create_rng(self, data):
         name = data[1]["Name"]

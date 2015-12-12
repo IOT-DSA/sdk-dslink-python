@@ -7,7 +7,6 @@ from twisted.internet import reactor
 
 from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
-from dslink.Node import Node
 from dslink.Requester import Requester
 from dslink.Responder import Responder
 from dslink.WebSocket import WebSocket
@@ -66,29 +65,28 @@ class DSLink:
         pass
 
     # noinspection PyMethodMayBeStatic
-    def get_default_nodes(self):
+    def get_default_nodes(self, super_root):
         """
         Create the default Node structure in this, override it.
-        :return:
+        :param super_root: Super Root.
+        :return: Super Root with default Node structure.
         """
-        return self.get_root_node()
-
-    def get_root_node(self):
-        """
-        Gets the default root Node. For use in get_default_nodes *ONLY*.
-        :return: Default root Node.
-        """
-        root = Node("", None)
-        root.link = self
-
-        return root
+        return super_root
 
     def get_auth(self):
+        """
+        Get auth parameter for connection.
+        :return: Auth parameter.
+        """
         auth = str(self.server_config["salt"]) + self.shared_secret
         auth = base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
         return auth
 
     def get_url(self):
+        """
+        Get full WebSocket URL.
+        :return: WebSocket URL.
+        """
         websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s" % self.dsid
         if self.needs_auth:
             websocket_uri += "&auth=%s" % self.get_auth()
