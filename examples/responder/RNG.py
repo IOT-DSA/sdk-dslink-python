@@ -64,12 +64,12 @@ class RNGDSLink(DSLink):
 
     def create_rng(self, data):
         name = data[1]["Name"]
-        if self.responder.super_root.get("/%s" % name) is None:
-            rng = Node(name, self.responder.super_root)
+        if self.responder.get_super_root().get("/%s" % name) is None:
+            rng = Node(name, self.responder.get_super_root())
             rng.set_config("$is", "rng")
             rng.set_type("number")
             rng.set_value(0)
-            self.responder.super_root.add_child(rng)
+            self.responder.get_super_root().add_child(rng)
             delete = Node("delete", rng)
             delete.set_config("$is", "delete_rng")
             delete.set_invokable("config")
@@ -96,12 +96,12 @@ class RNGDSLink(DSLink):
 
     def delete_rng(self, data):
         del self.rngs[data[0].parent.name]
-        self.responder.super_root.remove_child(data[0].parent.name)
+        self.responder.get_super_root().remove_child(data[0].parent.name)
         return [[]]
 
     def restore_rngs(self):
-        for child in self.responder.super_root.children:
-            node = self.responder.super_root.children[child]
+        for child in self.responder.get_super_root().children:
+            node = self.responder.get_super_root().children[child]
             if node.get_config("$is") == "rng":
                 self.rngs[node.name] = node
 

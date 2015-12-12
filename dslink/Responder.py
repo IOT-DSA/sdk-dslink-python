@@ -8,6 +8,10 @@ from dslink.Node import Node
 
 class Responder:
     def __init__(self, link):
+        """
+        Create Responder class.
+        :param link: DSLink instance.
+        """
         self.link = link
         self.nodes_changed = False
         self.subscription_manager = LocalSubscriptionManager(link)
@@ -15,6 +19,10 @@ class Responder:
         self.profile_manager = ProfileManager(link)
 
     def start(self):
+        """
+        Start Responder.
+        :return:
+        """
         # Load or create an empty Node structure
         self.super_root = self.load_nodes()
         self.create_defs()
@@ -24,14 +32,21 @@ class Responder:
             reactor.callLater(1, self.save_timer)
 
     def get_super_root(self):
+        """
+        Get Super Root.
+        :return: Super Root.
+        """
         return self.super_root
 
     def create_defs(self):
-        defs = Node("defs", self.super_root)
+        """
+        Create /defs/ Node.
+        """
+        defs = Node("defs", self.get_super_root())
         defs.set_transient(True)
         defs.set_config("$hidden", True)
         defs.add_child(Node("profile", defs))
-        self.super_root.add_child(defs)
+        self.get_super_root().add_child(defs)
 
     # noinspection PyBroadException
     def load_nodes(self):
@@ -83,7 +98,7 @@ class Responder:
             if os.path.exists(self.link.config.nodes_path):
                 os.rename(self.link.config.nodes_path, self.link.config.nodes_path + ".bak")
             nodes_file = open(self.link.config.nodes_path, "w")
-            nodes_file.write(json.dumps(self.super_root.to_json(), sort_keys=True, indent=2))
+            nodes_file.write(json.dumps(self.get_super_root().to_json(), sort_keys=True, indent=2))
             nodes_file.flush()
             os.fsync(nodes_file.fileno())
             nodes_file.close()
@@ -151,5 +166,3 @@ class StreamManager:
             del self.streams[rid]
         except KeyError:
             self.link.logger.debug("Unknown rid %s" % rid)
-
-

@@ -49,7 +49,7 @@ class ProfileManager:
         :param profile: Profile name.
         :return: Profile instance.
         """
-        profile_node = self.link.responder.super_root.get("/defs/profile/")
+        profile_node = self.link.responder.get_super_root().get("/defs/profile/")
         if profile in self.profiles and profile_node.has_child(profile):
             raise ValueError("Profile %s already exists" % profile)
         profile_inst = Profile(profile)
@@ -113,4 +113,4 @@ class ProfileManager:
         """
         if profile not in self.profiles:
             raise ValueError("Profile %s doesn't exist" % profile)
-        return self.link.responder.super_root.get("/defs/profile/%s")
+        return self.link.responder.get_super_root().get("/defs/profile/%s")
