@@ -24,7 +24,7 @@ class Request:
             self.logger.debug("List method")
             node = self.link.super_root.get(self.request["path"])
             if node is not None:
-                self.link.strman.open_stream(node, self.rid)
+                self.link.responder.stream_manager.open_stream(node, self.rid)
                 return Response({
                     "rid": self.rid,
                     "stream": "open",
@@ -40,7 +40,7 @@ class Request:
             for sub in self.request["paths"]:
                 node = self.link.super_root.get(sub["path"])
                 if node is not None:
-                    self.link.subman.subscribe(node, sub["sid"])
+                    self.link.responder.subscription_manager.subscribe(node, sub["sid"])
                     self.logger.debug("Subscription added")
             return Response({
                 "rid": self.rid,
@@ -49,7 +49,7 @@ class Request:
         elif self.method == "unsubscribe":
             self.logger.debug("Unsubscribe method")
             for sid in self.request["sids"]:
-                self.link.subman.unsubscribe(sid)
+                self.link.responder.subscription_manager.unsubscribe(sid)
             return Response({
                 "rid": self.rid,
                 "stream": "closed"
@@ -89,7 +89,7 @@ class Request:
             })
         elif self.method == "close":
             self.logger.debug("Close method")
-            self.link.strman.close_stream(self.rid)
+            self.link.responder.stream_manager.close_stream(self.rid)
             return Response({
                 "rid": self.rid,
                 "stream": "closed"

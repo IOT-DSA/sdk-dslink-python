@@ -10,8 +10,8 @@ from twisted.internet import reactor
 from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
 from dslink.Node import Node
-from dslink.Profile import ProfileManager
 from dslink.Requester import Requester
+from dslink.Responder import Responder
 from dslink.WebSocket import WebSocket
 
 
@@ -42,12 +42,11 @@ class DSLink:
         self.super_root = self.load_nodes()
         self.create_defs()
 
-        # Managers setup
-        self.subman = LocalSubscriptionManager()
-        self.strman = StreamManager()
-        self.profile_manager = ProfileManager(self)
+        # Requester and Responder setup
         if self.config.requester:
             self.requester = Requester(self)
+        if self.config.responder:
+            self.responder = Responder(self)
 
         # DSLink setup
         self.keypair = Keypair(self.config.keypair_path)
@@ -204,70 +203,6 @@ class DSLink:
         while len(string) % 4 != 0:
             string += "="
         return string
-
-
-class LocalSubscriptionManager:
-    """
-    Manages subscriptions to Nodes.
-    """
-
-    def __init__(self):
-        """
-        Constructor of SubscriptionManager.
-        """
-        self.subscriptions = {}
-
-    def subscribe(self, node, sid):
-        """
-        Store a Subscription to a Node.
-        :param node: Node to subscribe to.
-        :param sid: SID of Subscription.
-        """
-        self.subscriptions[sid] = node
-        self.subscriptions[sid].add_subscriber(sid)
-
-    def unsubscribe(self, sid):
-        """
-        Remove a Subscription to a Node.
-        :param sid: SID of Subscription.
-        """
-        try:
-            self.subscriptions[sid].remove_subscriber(sid)
-            del self.subscriptions[sid]
-        except KeyError:
-            logging.getLogger("DSlink").debug("Unknown sid %s" % sid)
-
-
-class StreamManager:
-    """
-    Manages streams for Nodes.
-    """
-
-    def __init__(self):
-        """
-        Constructor of StreamManager.
-        """
-        self.streams = {}
-
-    def open_stream(self, node, rid):
-        """
-        Open a Stream.
-        :param node: Node to handle streaming.
-        :param rid: RID of Stream.
-        """
-        self.streams[rid] = node
-        self.streams[rid].streams.append(rid)
-
-    def close_stream(self, rid):
-        """
-        Close a Stream.
-        :param rid: RID of Stream.
-        """
-        try:
-            self.streams[rid].streams.remove(rid)
-            del self.streams[rid]
-        except KeyError:
-            logging.getLogger("DSLink").debug("Unknown rid %s" % rid)
 
 
 class Configuration:

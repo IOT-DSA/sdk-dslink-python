@@ -9,16 +9,16 @@ class RNGDSLink(DSLink):
         self.speed = 1
         self.rngs = {}
 
-        self.profile_manager.create_profile("rng")
+        self.responder.profile_manager.create_profile("rng")
 
-        self.profile_manager.create_profile("create_rng")
-        self.profile_manager.register_callback("create_rng", self.create_rng)
+        self.responder.profile_manager.create_profile("create_rng")
+        self.responder.profile_manager.register_callback("create_rng", self.create_rng)
 
-        self.profile_manager.create_profile("set_speed")
-        self.profile_manager.register_callback("set_speed", self.set_speed)
+        self.responder.profile_manager.create_profile("set_speed")
+        self.responder.profile_manager.register_callback("set_speed", self.set_speed)
 
-        self.profile_manager.create_profile("delete_rng")
-        self.profile_manager.register_callback("delete_rng", self.delete_rng)
+        self.responder.profile_manager.create_profile("delete_rng")
+        self.responder.profile_manager.register_callback("delete_rng", self.delete_rng)
 
         self.restore_rngs()
         self.update_rng()
@@ -62,8 +62,8 @@ class RNGDSLink(DSLink):
         root.add_child(set_speed)
         return root
 
-    def create_rng(self, obj):
-        name = obj.params["Name"]
+    def create_rng(self, data):
+        name = data[1]["Name"]
         if self.super_root.get("/%s" % name) is None:
             rng = Node(name, self.super_root)
             rng.set_config("$is", "rng")
@@ -86,20 +86,18 @@ class RNGDSLink(DSLink):
             ]
         ]
 
-    def set_speed(self, obj):
-        self.speed = obj.params["Speed"]
+    def set_speed(self, data):
+        self.speed = data[1]["Speed"]
         return [
             [
                 True
             ]
         ]
 
-    def delete_rng(self, obj):
-        del self.rngs[obj.node.parent.name]
-        self.super_root.remove_child(obj.node.parent.name)
-        return [
-            []
-        ]
+    def delete_rng(self, data):
+        del self.rngs[data[0].parent.name]
+        self.super_root.remove_child(data[0].parent.name)
+        return [[]]
 
     def restore_rngs(self):
         for child in self.super_root.children:

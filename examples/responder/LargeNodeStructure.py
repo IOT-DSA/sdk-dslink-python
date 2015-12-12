@@ -11,4 +11,4 @@ class LargeNodeStructure(dslink.DSLink):
             self.super_root.add_child(first)
 
 if __name__ == "__main__":
-    LargeNodeStructure(dslink.Configuration("python-large", responder=True, requester=True, no_save_nodes=True))
+    LargeNodeStructure(dslink.Configuration("python-large", responder=True, no_save_nodes=True))

@@ -88,7 +88,7 @@ class Node:
                 if hasattr(self.set_value_callback, "__call__"):
                     self.set_value_callback(node=self, value=value)
                 try:
-                    self.link.profile_manager.get_profile(self.get_config("$is")).run_set_callback((self, value))
+                    self.link.responder.profile_manager.get_profile(self.get_config("$is")).run_set_callback((self, value))
                 except ValueError:
                     pass
         return i
@@ -349,7 +349,7 @@ class Node:
         self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         try:
             # noinspection PyCallingNonCallable
-            return (self.config["$columns"] if "$columns" in self.config else []), self.link.profile_manager.get_profile(self.get_config("$is")).run_callback((self, params))
+            return (self.config["$columns"] if "$columns" in self.config else []), self.link.responder.profile_manager.get_profile(self.get_config("$is")).run_callback((self, params))
         except ValueError:
             return [], []
 
