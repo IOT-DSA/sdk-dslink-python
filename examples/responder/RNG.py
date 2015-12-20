@@ -1,6 +1,7 @@
 import random
 
-from dslink.DSLink import DSLink, Configuration, Node
+from dslink.DSLink import DSLink, Configuration
+from dslink.Node import Node
 from twisted.internet import reactor
 
 
@@ -40,7 +41,7 @@ class RNGDSLink(DSLink):
                 "type": "bool"
             }
         ])
-        super_root.add_child(create_rng)
+
         set_speed = Node("set_speed", super_root)
         set_speed.set_display_name("Set Speed")
         set_speed.set_config("$is", "set_speed")
@@ -57,7 +58,14 @@ class RNGDSLink(DSLink):
                 "type": "bool"
             }
         ])
+
+        temp = Node("temp", super_root)
+        temp.set_invokable("config")
+
+        super_root.add_child(create_rng)
         super_root.add_child(set_speed)
+        super_root.add_child(temp)
+
         return super_root
 
     def create_rng(self, data):

@@ -48,6 +48,15 @@ class Responder:
         defs.add_child(Node("profile", defs))
         self.get_super_root().add_child(defs)
 
+    def create_empty_super_root(self):
+        """
+        Create empty super root.
+        :return: Empty Super Root.
+        """
+        super_root = Node("", None)
+        super_root.link = self.link
+        return super_root
+
     # noinspection PyBroadException
     def load_nodes(self):
         """
@@ -74,12 +83,12 @@ class Responder:
                         return Node.from_json(obj, None, "", link=self.link)
                     except:
                         self.link.logger.error("Unable to restore nodes, using default")
-                        return self.link.get_default_nodes()
+                        return self.link.get_default_nodes(self.create_empty_super_root())
                 else:
                     self.link.logger.warn("Backup nodes data doesn't exist, using default")
-                    return self.link.get_default_nodes()
+                    return self.link.get_default_nodes(self.create_empty_super_root())
         else:
-            return self.link.get_default_nodes()
+            return self.link.get_default_nodes(self.create_empty_super_root())
 
     def save_timer(self):
         """
