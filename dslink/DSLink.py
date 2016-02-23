@@ -3,6 +3,8 @@ import base64
 import hashlib
 import logging
 from urlparse import urlparse
+
+import signal
 from twisted.internet import reactor
 
 from dslink.Crypto import Keypair
@@ -34,6 +36,11 @@ class DSLink:
         self.logger = self.create_logger("DSLink", self.config.log_level)
         self.logger.info("Starting DSLink")
 
+        def stop(*args):
+            reactor.stop()
+
+        signal.signal(signal.SIGINT, stop)
+
         # Requester and Responder setup
         if self.config.requester:
             self.requester = Requester(self)
@@ -55,7 +62,7 @@ class DSLink:
 
         self.logger.info("Started DSLink")
         self.logger.debug("Starting reactor")
-        reactor.run()
+        reactor.run(installSignalHandlers=False)
 
     def start(self):
         """
