@@ -43,7 +43,6 @@ class DSLink:
 
         signal.signal(signal.SIGINT, stop)
         signal.signal(signal.SIGTERM, stop)
-        signal.signal(signal.SIGKILL, stop)
 
         # Requester and Responder setup
         if self.config.requester:
