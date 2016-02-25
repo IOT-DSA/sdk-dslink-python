@@ -5,6 +5,8 @@ import logging
 from urlparse import urlparse
 
 import signal
+
+import sys
 from twisted.internet import reactor
 
 from dslink.Crypto import Keypair
@@ -36,13 +38,9 @@ class DSLink:
         self.logger = self.create_logger("DSLink", self.config.log_level)
         self.logger.info("Starting DSLink")
 
-        def stop(*args):
-            reactor.removeAll()
-            reactor.iterate()
-            reactor.stop()
-
-        signal.signal(signal.SIGINT, stop)
-        signal.signal(signal.SIGTERM, stop)
+        # Signal setup
+        signal.signal(signal.SIGINT, self.stop)
+        signal.signal(signal.SIGTERM, self.stop)
 
         # Requester and Responder setup
         if self.config.requester:
@@ -73,6 +71,19 @@ class DSLink:
         Override this rather than the constructor.
         """
         pass
+
+    def stop(*args):
+        """
+        Called when the DSLink is going to stop.
+        Override this if you start any threads you need to stop.
+        Be sure to call the super function.
+        :param args: Signal arguments.
+        :return:
+        """
+        reactor.removeAll()
+        reactor.iterate()
+        reactor.stop()
+        sys.exit(0)
 
     # noinspection PyMethodMayBeStatic
     def get_default_nodes(self, super_root):
