@@ -37,9 +37,13 @@ class DSLink:
         self.logger.info("Starting DSLink")
 
         def stop(*args):
+            reactor.removeAll()
+            reactor.iterate()
             reactor.stop()
 
         signal.signal(signal.SIGINT, stop)
+        signal.signal(signal.SIGTERM, stop)
+        signal.signal(signal.SIGKILL, stop)
 
         # Requester and Responder setup
         if self.config.requester:
