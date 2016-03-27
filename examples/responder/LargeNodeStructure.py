@@ -3,10 +3,10 @@ import dslink
 
 class LargeNodeStructure(dslink.DSLink):
     def start(self):
-        for x in range(0, 9):
-            first = dslink.Node("Test%i" % x, self.responder.get_super_root())
-            for y in range(0, 10):
-                second = dslink.Node("Test%i" % y, first)
+        for x in range(0, 99):
+            first = dslink.Node("First%i" % x, self.responder.get_super_root())
+            for y in range(0, 99):
+                second = dslink.Node("Second%i" % y, first)
                 first.add_child(second)
             self.responder.get_super_root().add_child(first)
 

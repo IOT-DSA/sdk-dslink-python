@@ -16,6 +16,7 @@ class ListResponse(Response):
     def process(self, update):
         from dslink.Node import RemoteNode
         node = RemoteNode(self.path.split("/")[-1], None)
+        node.path = self.path
         node.link = None
         node.from_serialized(update)
         return node

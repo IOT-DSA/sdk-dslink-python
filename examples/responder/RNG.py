@@ -59,12 +59,8 @@ class RNGDSLink(DSLink):
             }
         ])
 
-        temp = Node("temp", super_root)
-        temp.set_invokable("config")
-
         super_root.add_child(create_rng)
         super_root.add_child(set_speed)
-        super_root.add_child(temp)
 
         return super_root
 

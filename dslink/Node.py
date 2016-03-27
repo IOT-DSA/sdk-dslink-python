@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import logging
+from threading import Lock
 
 from dslink.Response import Response
 from dslink.Value import Value
@@ -25,11 +26,13 @@ class Node:
         self.transient = False
         self.value = Value()
         self.children = {}
+        self.children_lock = Lock()
         self.config = OrderedDict([("$is", "node")])
         self.attributes = OrderedDict()
         self.subscribers = []
         self.streams = []
         self.removed_children = []
+        self.removed_children_lock = Lock()
         # TODO(logangorence): Deprecate for v0.6
         self.set_value_callback = None
         if parent is not None:
@@ -220,31 +223,31 @@ class Node:
             out.append([c, self.config[c]])
         for a in self.attributes:
             out.append([a, self.attributes[a]])
-        # TODO(logangorence): Investigate "RuntimeError: dictionary changed size during iteration" error.
-        # TODO(logangorence): Use threading's Lock class for above issue.
-        for child in self.children:
-            child = self.children[child]
-            if child.value.has_value():
-                val = {
-                    "value": child.value.value,
-                    "ts": child.value.updated_at.isoformat()
-                }
-            else:
-                val = {}
-            i = dict(child.config)
-            i.update(child.attributes)
-            i.update(val)
-            out.append([
-                child.name,
-                i
-            ])
-        for child in self.removed_children:
-            out.append({
-                "name": child.name,
-                "change": "remove"
-            })
-            self.nodes_changed()
-        del self.removed_children[:]
+        with self.children_lock:
+            for child in self.children:
+                child = self.children[child]
+                if child.value.has_value():
+                    val = {
+                        "value": child.value.value,
+                        "ts": child.value.updated_at.isoformat()
+                    }
+                else:
+                    val = {}
+                i = dict(child.config)
+                i.update(child.attributes)
+                i.update(val)
+                out.append([
+                    child.name,
+                    i
+                ])
+        with self.removed_children_lock:
+            for child in self.removed_children:
+                out.append({
+                    "name": child.name,
+                    "change": "remove"
+                })
+                self.nodes_changed()
+            del self.removed_children[:]
         return out
 
     def add_child(self, child):
@@ -252,9 +255,10 @@ class Node:
         Add a child to this Node.
         :param child: Child to add.
         """
-        if child.name in self.children:
-            raise ValueError("Child already exists in %s" % self.path)
-        self.children[child.name] = child
+        with self.children_lock:
+            if child.name in self.children:
+                raise ValueError("Child %s already exists in %s" % (child.name, self.path))
+            self.children[child.name] = child
         self.nodes_changed()
 
         if self.standalone or self.link_is_active():
@@ -264,13 +268,12 @@ class Node:
         """
         Remove a child from this Node.
         :param name: Child Node name.
-        :return: True on success.
         """
         if name not in self.children:
-            return False
-        self.removed_children.append(self.children.pop(name))
+            return
+        with self.children_lock:
+            self.removed_children.append(self.children.pop(name))
         self.update_subscribers()
-        return True
 
     def has_child(self, name):
         """
@@ -461,8 +464,10 @@ class Node:
 
 
 class RemoteNode(Node):
-    def __init__(self, name, parent):
+    def __init__(self, name, parent, parent_path=None):
         Node.__init__(self, name, parent)
+        if parent_path is not None:
+            self.path = parent_path + name
 
     def set_value(self, value, trigger_callback=False, check=True):
         # TODO(logangorence): Set value.

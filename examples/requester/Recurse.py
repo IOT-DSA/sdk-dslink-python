@@ -1,5 +1,4 @@
 import dslink
-from twisted.internet import reactor
 
 
 class RecurseDSLink(dslink.DSLink):
