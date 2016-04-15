@@ -1,13 +1,5 @@
 from setuptools import setup
 
-requirements = [
-    "autobahn",
-    "pyelliptic",
-    "requests",
-    "twisted",
-    "zope.interface"
-]
-
 setup(
     name="dslink",
     version="0.6.6",
@@ -19,6 +11,12 @@ setup(
     packages=[
         "dslink"
     ],
-    install_requires=requirements,
+    install_requires=[
+        "autobahn == 0.12.1",
+        "pyelliptic == 1.5.7",
+        "requests == 2.9.1",
+        "twisted == 16.1.1",
+        "zope.interface == 4.1.3"
+    ],
     use_2to3=True
 )
