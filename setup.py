@@ -15,7 +15,6 @@ setup(
         "autobahn == 0.12.1",
         "pyelliptic == 1.5.7",
         "requests == 2.9.1",
-        "twisted == 16.1.1",
         "zope.interface == 4.1.3"
     ],
     use_2to3=True
