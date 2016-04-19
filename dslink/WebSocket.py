@@ -111,7 +111,8 @@ class DSAWebSocket(WebSocketClientProtocol):
             ack = True
             self.handleResponses(i["responses"])
         if ack:
-            m["ack"] = i["msg"]
+            if "msg" in i:
+                m["ack"] = i["msg"]
             # noinspection PyTypeChecker
             self.sendMessage(m)
 
