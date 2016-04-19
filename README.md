@@ -1,8 +1,9 @@
 # DSLink SDK for Python
+[![PyPI version](https://badge.fury.io/py/dslink.svg)](https://badge.fury.io/py/dslink)
 
 DSLink SDK for Python.
 
-**This DSLink SDK isn't finished yet. Features are done, but the API is not considered stable yet.**
+**This DSLink SDK isn't finished yet. Most features are done, but the API is not considered stable or frozen yet.**
 
 ## Using the SDK
 We're publishing the DSLink package to [PyPI](https://pypi.python.org/pypi/dslink).
