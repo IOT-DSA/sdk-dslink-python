@@ -54,6 +54,7 @@ class DSLink:
         self.handshake = Handshake(self, self.keypair)
         self.handshake.run_handshake()
         self.dsid = self.handshake.get_dsid()
+        self.config.dsid = self.config.dsid
 
         # Connection setup
         self.wsp = None
@@ -111,8 +112,9 @@ class DSLink:
         websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s" % self.dsid
         if self.needs_auth:
             websocket_uri += "&auth=%s" % self.get_auth()
-        if self.config.token is not None:
-            websocket_uri += "&token=%s" % self.config.token
+        token = self.config.token_hash()
+        if token is not None:
+            websocket_uri += token
         url = urlparse(websocket_uri)
         if url.port is None:
             port = 80
@@ -186,6 +188,7 @@ class Configuration:
         parser.add_argument("--token")
         args = parser.parse_args()
         self.name = name
+        self.dsid = None
         self.broker = args.broker
         self.log_level = args.log.lower()
         self.token = args.token
@@ -208,3 +211,11 @@ class Configuration:
             self.log_level = logging.DEBUG
         elif self.log_level == "none":
             self.log_level = logging.NOTSET
+
+    def token_hash(self):
+        if self.token is not None and len(self.token) > 16:
+            token_id = self.token[0:16]
+            hash_str = base64.urlsafe_b64encode(hashlib.sha256(self.dsid + self.token)).decode("utf-8").replace("=", "")
+            return "&token=" + token_id + hash_str
+        else:
+            return None
