@@ -29,8 +29,9 @@ class Handshake:
 
     def run_handshake(self):
         url = self.link.config.broker + "?dsId=%s" % self.get_dsid()
-        if self.link.config.token is not None:
-            url += "&token=%s" % self.link.config.token
+        token = self.link.config.token_hash()
+        if token is not None:
+            url += token
         self.link.logger.debug("Running handshake on %s" % url)
         keep_trying = True
         cooldown = 1
