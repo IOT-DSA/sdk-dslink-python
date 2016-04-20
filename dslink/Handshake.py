@@ -29,7 +29,7 @@ class Handshake:
 
     def run_handshake(self):
         url = self.link.config.broker + "?dsId=%s" % self.get_dsid()
-        token = self.link.config.token_hash()
+        token = self.link.config.token_hash(self.get_dsid(), self.link.config.token)
         if token is not None:
             url += token
         self.link.logger.debug("Running handshake on %s" % url)
