@@ -283,6 +283,17 @@ class Node:
         """
         return name in self.children
 
+    def create_child(self, name):
+        """
+        Create a child node that inherits the root
+        link and parent is this Node.
+        :param name: Name of child node to create.
+        :return: Child node.
+        """
+        child = Node(name, self)
+        self.add_child(child)
+        return child
+
     def get(self, path):
         """
         Get a Node from this position on the Node structure.
