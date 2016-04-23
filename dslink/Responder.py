@@ -116,14 +116,18 @@ class LocalSubscriptionManager:
         self.link = link
         self.subscriptions = {}
 
-    def subscribe(self, node, sid):
+    def subscribe(self, node, sid, qos=0):
         """
         Store a Subscription to a Node.
         :param node: Node to subscribe to.
         :param sid: SID of Subscription.
+        :param qos: Quality of Service.
         """
-        self.subscriptions[sid] = node
-        self.subscriptions[sid].add_subscriber(sid)
+        node.add_subscriber(sid)
+        self.subscriptions[sid] = {
+            "node": node,
+            "qos": qos
+        }
 
     def unsubscribe(self, sid):
         """
@@ -131,7 +135,7 @@ class LocalSubscriptionManager:
         :param sid: SID of Subscription.
         """
         try:
-            self.subscriptions[sid].remove_subscriber(sid)
+            self.subscriptions[sid]["node"].remove_subscriber(sid)
             del self.subscriptions[sid]
         except KeyError:
             self.link.logger.debug("Unknown sid %s" % sid)
