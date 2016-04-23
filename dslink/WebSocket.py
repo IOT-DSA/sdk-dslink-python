@@ -136,10 +136,24 @@ class DSAWebSocket(WebSocketClientProtocol):
             Response(response)
             if response["rid"] is 0:
                 for update in response["updates"]:
-                    sid = update[0]
-                    val = update[1]
-                    time = update[2]
-                    self.link.requester.subscription_manager.run_callback(sid, val, time)
+                    if isinstance(update, list):
+                        sid = update[0]
+                        val = update[1]
+                        time = update[2]
+                        self.link.requester.subscription_manager.run_callback(sid, val, time)
+                    elif isinstance(update, dict):
+                        def get_value(vlist, key, default):
+                            if key in vlist:
+                                return vlist[key]
+                            return default
+                        sid = update["sid"]
+                        val = update["value"]
+                        time = update["ts"]
+                        count = get_value(update, "count", 0)
+                        sum = get_value(update, "sum", 0)
+                        min = get_value(update, "min", 0)
+                        max = get_value(update, "max", 0)
+                        self.link.requester.subscription_manager.run_callback(sid, val, time, count, sum, min, max)
             elif response["rid"] in self.link.requester.request_manager.requests:
                 self.link.requester.request_manager.invoke_request(response["rid"], response)
 

@@ -265,11 +265,15 @@ class RemoteSubscriptionManager:
             if meta["path"] == path:
                 return sid
 
-    def run_callback(self, sid, value, time):
+    def run_callback(self, sid, value, time, count=0, sum=0, min=0, max=0):
         """
         Run a subscription's callback.
         :param sid: Subscription ID.
         :param value: Value.
         :param time: Updated at time.
+        :param count: Number of values merged.
+        :param sum: Sum of values merged.
+        :param min: Minimum value of values merged.
+        :param max: Maximum value of values merged.
         """
-        self.subscriptions[sid]["callback"]((value, time))
+        self.subscriptions[sid]["callback"]((value, time, count, sum, min, max))
