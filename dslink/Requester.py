@@ -113,32 +113,33 @@ class Requester:
         if callback:
             self.request_manager.start_request(rid, "invoke", callback)
 
-    def subscribe(self, path, callback):
+    def subscribe(self, path, callback, qos=0):
         """
         Subscribe to a remote Node.
         :param path: Path of Node.
         :param callback: Response callback.
+        :param qos: Quality of Service.
         """
-        if type(path) is str:
-            rid = self.get_next_rid()
-            sid = self.get_next_sid()
-            self.subscription_manager.subscribe(sid, path, callback)
-            self.link.wsp.sendMessage({
-                "requests": [
-                    {
-                        "rid": rid,
-                        "method": "subscribe",
-                        "paths": [
-                            {
-                                "path": path,
-                                "sid": sid
-                            }
-                        ]
-                    }
-                ]
-            })
-        else:
+        if type(path) is not str:
             raise ValueError("Unsupported path type.")
+        rid = self.get_next_rid()
+        sid = self.get_next_sid()
+        self.subscription_manager.subscribe(sid, path, callback, qos)
+        self.link.wsp.sendMessage({
+            "requests": [
+                {
+                    "rid": rid,
+                    "method": "subscribe",
+                    "paths": [
+                        {
+                            "path": path,
+                            "sid": sid,
+                            "qos": qos
+                        }
+                    ]
+                }
+            ]
+        })
 
     def unsubscribe(self, path):
         """
@@ -229,12 +230,13 @@ class RemoteSubscriptionManager:
     def __init__(self):
         self.subscriptions = {}
 
-    def subscribe(self, sid, path, callback):
+    def subscribe(self, sid, path, callback, qos=0):
         """
         Subscribe to a Node.
         :param sid: Subscription ID.
         :param path: Path of Node.
         :param callback: Callback to run with value.
+        :param qos: Quality of Service.
         """
         if not hasattr(callback, "__call__"):
             raise ValueError("Passed callback is not callable.")
@@ -242,7 +244,8 @@ class RemoteSubscriptionManager:
             raise ValueError("Sid %s is already in use." % sid)
         self.subscriptions[sid] = {
             "path": path,
-            "callback": callback
+            "callback": callback,
+            "qos": qos
         }
 
     def unsubscribe(self, sid):

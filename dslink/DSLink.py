@@ -1,19 +1,17 @@
-import argparse
-import base64
-import hashlib
-import logging
-from urlparse import urlparse
-
-import signal
-
-import sys
-from twisted.internet import reactor
-
 from dslink.Crypto import Keypair
 from dslink.Handshake import Handshake
 from dslink.Requester import Requester
 from dslink.Responder import Responder
 from dslink.WebSocket import WebSocket
+
+import argparse
+import base64
+import hashlib
+import logging
+from urlparse import urlparse
+import signal
+import sys
+from twisted.internet import reactor
 
 
 class DSLink:
@@ -141,17 +139,6 @@ class DSLink:
         logger.setLevel(log_level)
         logger.addHandler(ch)
         return logger
-
-    @staticmethod
-    def add_padding(string):
-        """
-        Add padding to a URL safe base64 string.
-        :param string:
-        :return:
-        """
-        while len(string) % 4 != 0:
-            string += "="
-        return string
 
     @staticmethod
     def call_later(delay, call, *args, **kw):

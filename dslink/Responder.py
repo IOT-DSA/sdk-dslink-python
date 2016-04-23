@@ -1,9 +1,9 @@
-import os.path
-import json
-from twisted.internet import reactor
-
 from dslink.Profile import ProfileManager
 from dslink.Node import Node
+
+import os.path
+import json
+from twisted.internet import task
 
 
 class Responder:
@@ -29,7 +29,7 @@ class Responder:
 
         # Start saving timer
         if not self.link.config.no_save_nodes:
-            reactor.callLater(1, self.save_timer)
+            task.LoopingCall(self.save_nodes)
 
     def get_super_root(self):
         """
@@ -90,13 +90,6 @@ class Responder:
         else:
             return self.link.get_default_nodes(self.create_empty_super_root())
 
-    def save_timer(self):
-        """
-        Save timer, schedules to call itself every 5 seconds by default.
-        """
-        self.save_nodes()
-        reactor.callLater(5, self.save_timer)
-
     def save_nodes(self):
         """
         Save the nodes.json out to disk if changed, and create the bak file.
@@ -123,14 +116,18 @@ class LocalSubscriptionManager:
         self.link = link
         self.subscriptions = {}
 
-    def subscribe(self, node, sid):
+    def subscribe(self, node, sid, qos=0):
         """
         Store a Subscription to a Node.
         :param node: Node to subscribe to.
         :param sid: SID of Subscription.
+        :param qos: Quality of Service.
         """
-        self.subscriptions[sid] = node
-        self.subscriptions[sid].add_subscriber(sid)
+        node.add_subscriber(sid)
+        self.subscriptions[sid] = {
+            "node": node,
+            "qos": qos
+        }
 
     def unsubscribe(self, sid):
         """
@@ -138,7 +135,7 @@ class LocalSubscriptionManager:
         :param sid: SID of Subscription.
         """
         try:
-            self.subscriptions[sid].remove_subscriber(sid)
+            self.subscriptions[sid]["node"].remove_subscriber(sid)
             del self.subscriptions[sid]
         except KeyError:
             self.link.logger.debug("Unknown sid %s" % sid)
