@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="dslink",
-    version="0.6.13",
+    version="0.6.14",
     description="DSLink SDK for Python",
     url="http://github.com/IOT-DSA/sdk-dslink-python",
     author="Logan Gorence",
