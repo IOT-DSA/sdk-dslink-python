@@ -1,3 +1,7 @@
+from dslink.JsonSerializer import JsonEncoder
+from dslink.Request import Request
+from dslink.Response import Response
+
 import json
 import logging
 
@@ -5,10 +9,6 @@ from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientF
 from autobahn.websocket.protocol import parseWsUrl
 from twisted.internet import reactor
 from twisted.internet.protocol import ReconnectingClientFactory
-
-from dslink.JsonSerializer import JsonEncoder
-from dslink.Request import Request
-from dslink.Response import Response
 
 
 class WebSocket:

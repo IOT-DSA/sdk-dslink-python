@@ -1,9 +1,9 @@
+from dslink.Response import Response
+from dslink.Value import Value
+
 from collections import OrderedDict
 import logging
 from threading import Lock
-
-from dslink.Response import Response
-from dslink.Value import Value
 
 
 class Node:

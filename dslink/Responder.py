@@ -1,9 +1,9 @@
-import os.path
-import json
-from twisted.internet import reactor
-
 from dslink.Profile import ProfileManager
 from dslink.Node import Node
+
+import os.path
+import json
+from twisted.internet import task
 
 
 class Responder:
@@ -29,7 +29,7 @@ class Responder:
 
         # Start saving timer
         if not self.link.config.no_save_nodes:
-            reactor.callLater(1, self.save_timer)
+            task.LoopingCall(self.save_nodes)
 
     def get_super_root(self):
         """
@@ -89,13 +89,6 @@ class Responder:
                     return self.link.get_default_nodes(self.create_empty_super_root())
         else:
             return self.link.get_default_nodes(self.create_empty_super_root())
-
-    def save_timer(self):
-        """
-        Save timer, schedules to call itself every 5 seconds by default.
-        """
-        self.save_nodes()
-        reactor.callLater(5, self.save_timer)
 
     def save_nodes(self):
         """

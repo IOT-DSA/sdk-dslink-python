@@ -1,3 +1,4 @@
+# noinspection PyClassHasNoInit
 class Permission:
     NONE = "none"
     READ = "read"

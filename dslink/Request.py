@@ -1,6 +1,6 @@
-import logging
-
 from dslink.Response import Response
+
+import logging
 
 
 class Request:
