@@ -6,6 +6,7 @@ from autobahn.websocket.protocol import parseWsUrl
 from twisted.internet import reactor
 from twisted.internet.protocol import ReconnectingClientFactory
 
+from dslink.JsonSerializer import JsonEncoder
 from dslink.Request import Request
 from dslink.Response import Response
 
@@ -164,7 +165,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         payload["msg"] = self.msg
         self.msg += 1
-        payload = json.dumps(payload, sort_keys=True)
+        payload = json.dumps(payload, sort_keys=True, cls=JsonEncoder)
         self.logger.debug("Sent data: %s" % payload)
         payload = payload.encode("utf-8")
         super(DSAWebSocket, self).sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)

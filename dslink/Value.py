@@ -1,3 +1,6 @@
+# coding=utf-8
+from dslink.Util import base64_decode
+
 from datetime import datetime
 
 TYPES = [
@@ -7,7 +10,7 @@ TYPES = [
     "string",
     "bool",
     "enum",
-    "bytes",
+    "binary",
     "map",
     "array",
     "dynamic"
@@ -43,6 +46,8 @@ class Value:
         :return: True if successful.
         """
         set_val = True
+        if self.type == "binary" and isinstance(value, basestring) and value.startswith(b"\x1Bbytes:"):
+            value = bytearray(base64_decode(str(value[7:])))
         if check:
             set_val = self.check_type(value)
         if set_val:
@@ -73,7 +78,8 @@ class Value:
             return type(value) == bool
         elif self.is_enum(self.type):
             return value in self.get_enum_values(self.type)
-        # TODO(logangorence): Bytes value type.
+        elif self.type == "binary":
+            return type(value) == bytearray
         elif self.type == "map":
             return type(value) == map
         elif self.type == "array":

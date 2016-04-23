@@ -143,17 +143,6 @@ class DSLink:
         return logger
 
     @staticmethod
-    def add_padding(string):
-        """
-        Add padding to a URL safe base64 string.
-        :param string:
-        :return:
-        """
-        while len(string) % 4 != 0:
-            string += "="
-        return string
-
-    @staticmethod
     def call_later(delay, call, *args, **kw):
         """
         Call function later.

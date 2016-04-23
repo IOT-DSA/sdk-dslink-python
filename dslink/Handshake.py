@@ -1,3 +1,5 @@
+from dslink.Util import base64_add_padding
+
 import base64
 import json
 import time
@@ -52,4 +54,4 @@ class Handshake:
         if "tempKey" in self.link.server_config:
             self.link.needs_auth = True
             self.link.shared_secret = self.keypair.keypair.get_ecdh_key(
-                base64.urlsafe_b64decode(self.link.add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
+                base64.urlsafe_b64decode(base64_add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
