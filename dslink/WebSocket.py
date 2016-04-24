@@ -35,16 +35,22 @@ class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
     def __init__(self, websocket_uri, link):
         super(DSAWebSocketFactory, self).__init__(websocket_uri)
         self.link = link
+        self.cooldown = 1
     
     def clientConnectionFailed(self, connector, reason):
         print("Failed to connect, retrying...")
-        self.link.handshake.run_handshake()
-        self.reset_url()
-        self.retry(connector)
+        reactor.callLater(0.1, self.reconnect, connector)
 
     def clientConnectionLost(self, connector, unused_reason):
         print("Connection lost, retrying...")
-        self.link.handshake.run_handshake()
+        reactor.callLater(0.1, self.reconnect, connector)
+
+    def reconnect(self, connector):
+        if not self.link.handshake.run_handshake():
+            if self.cooldown <= 60:
+                self.cooldown += 1
+            reactor.callLater(self.cooldown, self.reconnect, connector)
+            return
         self.reset_url()
         self.retry(connector)
 

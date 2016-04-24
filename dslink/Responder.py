@@ -29,7 +29,7 @@ class Responder:
 
         # Start saving timer
         if not self.link.config.no_save_nodes:
-            task.LoopingCall(self.save_nodes)
+            task.LoopingCall(self.save_nodes).start(5)
 
     def get_super_root(self):
         """
@@ -69,7 +69,7 @@ class Responder:
                 obj = json.load(nodes_file)
                 nodes_file.close()
                 return Node.from_json(obj, None, "", link=self.link)
-            except Exception, e:
+            except Exception as e:
                 print(e)
                 self.link.logger.error("Unable to load nodes data")
                 if os.path.exists(nodes_path + ".bak"):
@@ -123,11 +123,12 @@ class LocalSubscriptionManager:
         :param sid: SID of Subscription.
         :param qos: Quality of Service.
         """
-        node.add_subscriber(sid)
         self.subscriptions[sid] = {
             "node": node,
             "qos": qos
         }
+        node.add_subscriber(sid)
+        print(qos)
 
     def unsubscribe(self, sid):
         """
@@ -139,6 +140,26 @@ class LocalSubscriptionManager:
             del self.subscriptions[sid]
         except KeyError:
             self.link.logger.debug("Unknown sid %s" % sid)
+
+    def send_value_update(self, node):
+        msg = {
+            "responses": []
+        }
+        for sid in node.subscribers:
+            if not self.link.active and self.subscriptions[sid]["qos"] > 0:
+                self.link.storage.store(self.subscriptions[sid], node.value)
+            msg["responses"].append({
+                "rid": 0,
+                "updates": [
+                    [
+                        sid,
+                        node.value.value,
+                        node.value.updated_at.isoformat()
+                    ]
+                ]
+            })
+        if len(msg["responses"]) is not 0:
+            self.link.wsp.sendMessage(msg)
 
 
 class StreamManager:

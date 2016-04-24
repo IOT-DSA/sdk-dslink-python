@@ -3,6 +3,7 @@ from dslink.Handshake import Handshake
 from dslink.Requester import Requester
 from dslink.Responder import Responder
 from dslink.WebSocket import WebSocket
+from dslink.storage.FileStorage import FileStorage
 
 import argparse
 import base64
@@ -31,6 +32,7 @@ class DSLink:
         # DSLink Configuration
         self.config = config
         self.server_config = None
+        self.storage = FileStorage()
 
         # Logger setup
         self.logger = self.create_logger("DSLink", self.config.log_level)

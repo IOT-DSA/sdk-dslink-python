@@ -40,7 +40,10 @@ class Request:
             for sub in self.request["paths"]:
                 node = self.link.responder.get_super_root().get(sub["path"])
                 if node is not None:
-                    self.link.responder.subscription_manager.subscribe(node, sub["sid"])
+                    qos = 0
+                    if "qos" in sub:
+                        qos = sub["qos"]
+                    self.link.responder.subscription_manager.subscribe(node, sub["sid"], qos)
                     self.logger.debug("Subscription added")
             return Response({
                 "rid": self.rid,

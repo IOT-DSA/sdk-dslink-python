@@ -392,22 +392,7 @@ class Node:
         Update all Subscribers of a Value change.
         """
         if self.value.has_value():
-            msg = {
-                "responses": []
-            }
-            for s in self.subscribers:
-                msg["responses"].append({
-                    "rid": 0,
-                    "updates": [
-                        [
-                            s,
-                            self.value.value,
-                            self.value.updated_at.isoformat()
-                        ]
-                    ]
-                })
-            if len(msg["responses"]) is not 0:
-                self.link.wsp.sendMessage(msg)
+            self.link.responder.subscription_manager.send_value_update(self)
 
     def add_subscriber(self, sid):
         """
