@@ -72,21 +72,18 @@ class DSLink:
         """
         pass
 
-    def stop(*args):
+    # noinspection PyUnresolvedReferences
+    def stop(self, *args):
         """
         Called when the DSLink is going to stop.
         Override this if you start any threads you need to stop.
         Be sure to call the super function.
         :param args: Signal arguments.
-        :return:
         """
+        reactor.callFromThread(self.wsp.sendClose)
         reactor.removeAll()
         reactor.iterate()
         reactor.stop()
-        try:
-            sys.exit(0)
-        except SystemExit:
-            pass
 
     # noinspection PyMethodMayBeStatic
     def get_default_nodes(self, super_root):

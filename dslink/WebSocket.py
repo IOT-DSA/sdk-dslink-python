@@ -28,7 +28,7 @@ class WebSocket:
         factory.protocol = DSAWebSocket
 
         link.logger.debug("Connecting WebSocket to %s" % websocket_uri)
-        reactor.connectTCP(url.hostname, port, factory)
+        self.connector = reactor.connectTCP(url.hostname, port, factory)
 
 
 class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
@@ -38,12 +38,12 @@ class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
         self.cooldown = 1
     
     def clientConnectionFailed(self, connector, reason):
-        print("Failed to connect, retrying...")
-        reactor.callLater(0.1, self.reconnect, connector)
+        self.link.logger.info("Failed to connect")
+        reactor.callLater(1, self.reconnect, connector)
 
     def clientConnectionLost(self, connector, unused_reason):
-        print("Connection lost, retrying...")
-        reactor.callLater(0.1, self.reconnect, connector)
+        self.link.logger.info("Connection lost")
+        reactor.callLater(1, self.reconnect, connector)
 
     def reconnect(self, connector):
         if not self.link.handshake.run_handshake():

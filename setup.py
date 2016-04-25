@@ -9,7 +9,8 @@ setup(
     author_email="l.gorence@dglogik.com",
     license="Apache 2.0",
     packages=[
-        "dslink"
+        "dslink",
+        "dslink.storage"
     ],
     install_requires=[
         "autobahn == 0.12.1",

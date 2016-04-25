@@ -8,3 +8,5 @@ __pycache__
 *.pyc
 nodes.json
 nodes.json.bak
+examples/*/storage/
+

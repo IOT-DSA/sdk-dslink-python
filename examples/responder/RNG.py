@@ -115,4 +115,4 @@ class RNGDSLink(DSLink):
         reactor.callLater(self.speed, self.update_rng)
 
 if __name__ == "__main__":
-    RNGDSLink(Configuration("python-rng", responder=True, requester=True))
+    RNGDSLink(Configuration("python-rng", responder=True, requester=True, no_save_nodes=True))
