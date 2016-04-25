@@ -7,7 +7,7 @@ import logging
 
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
 from autobahn.websocket.protocol import parseWsUrl
-from twisted.internet import reactor
+from twisted.internet import reactor, task
 from twisted.internet.protocol import ReconnectingClientFactory
 
 
@@ -78,10 +78,9 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         Send a blank object for a ping.
         """
-        self.logger.debug("Sent ping")
+        self.logger.debug("Ping")
         # noinspection PyTypeChecker
         self.sendMessage({})
-        reactor.callLater(self.link.config.ping_time, self.sendPingMsg)
 
     def onOpen(self):
         """
@@ -89,7 +88,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         self.link.active = True
         self.logger.info("WebSocket Connection Established")
-        self.sendPingMsg()
+        task.LoopingCall(self.sendPingMsg).start(self.link.config.ping_time)
 
     def onClose(self, wasClean, code, reason):
         """
