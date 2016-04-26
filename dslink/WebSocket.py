@@ -78,9 +78,10 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         Send a blank object for a ping.
         """
-        self.logger.debug("Ping")
-        # noinspection PyTypeChecker
-        self.sendMessage({})
+        if self.link.active:
+            self.logger.debug("Ping")
+            # noinspection PyTypeChecker
+            self.sendMessage({})
 
     def onOpen(self):
         """
