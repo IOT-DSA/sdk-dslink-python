@@ -55,8 +55,8 @@ class Request:
                 "stream": "closed"
             })
         elif self.method == "unsubscribe":
-            self.logger.debug("Unsubscribe method")
             for sid in self.request["sids"]:
+                self.logger.debug("Unsubscribe from sid %s" % sid)
                 self.link.responder.subscription_manager.unsubscribe(sid)
             return Response({
                 "rid": self.rid,
