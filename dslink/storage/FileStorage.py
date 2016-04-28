@@ -34,7 +34,6 @@ class FileStorage(StorageDriver):
             if qos is 2:
                 ts = json_obj["ts"]
 
-
     def store(self, subscription, value):
         qos = subscription["qos"]
         json_obj = None

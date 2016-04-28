@@ -48,7 +48,7 @@ class Request:
                     qos = 0
                     if "qos" in sub:
                         qos = sub["qos"]
-                    self.link.responder.subscription_manager.subscribe(node, sub["sid"], qos)
+                    self.link.responder.subscription_manager.add_value_sub(node, sub["sid"], qos)
                     self.logger.debug("Subscription added")
             return Response({
                 "rid": self.rid,
@@ -57,7 +57,7 @@ class Request:
         elif self.method == "unsubscribe":
             for sid in self.request["sids"]:
                 self.logger.debug("Unsubscribe from sid %s" % sid)
-                self.link.responder.subscription_manager.unsubscribe(sid)
+                self.link.responder.subscription_manager.remove_value_sub(sid)
             return Response({
                 "rid": self.rid,
                 "stream": "closed"

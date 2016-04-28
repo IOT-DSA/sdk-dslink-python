@@ -1,8 +1,9 @@
 from dslink.Profile import ProfileManager
 from dslink.Node import Node
 
-import os.path
 import json
+import os.path
+from threading import Lock
 from twisted.internet import task
 
 
@@ -107,6 +108,13 @@ class Responder:
             self.nodes_changed = False
 
 
+class Subscription:
+    def __init__(self, path, sid, qos):
+        self.path = path
+        self.sid = sid
+        self.qos = qos
+
+
 class LocalSubscriptionManager:
     """
     Manages subscriptions to local Nodes.
@@ -114,40 +122,57 @@ class LocalSubscriptionManager:
 
     def __init__(self, link):
         self.link = link
-        self.subscriptions = {}
+        self.value_lock = Lock()
+        self.path_subs = {}
+        self.value_sub_paths = {}
+        self.value_sub_sids = {}
 
-    def subscribe(self, node, sid, qos=0):
+    def add_value_sub(self, node, sid, qos=0):
         """
         Store a Subscription to a Node.
         :param node: Node to subscribe to.
         :param sid: SID of Subscription.
         :param qos: Quality of Service.
         """
-        self.subscriptions[sid] = {
-            "node": node,
-            "qos": qos
-        }
-        node.add_subscriber(sid)
-        print(qos)
+        path = Node.normalize_path(node.path, True)
+        self.value_lock.acquire()
 
-    def unsubscribe(self, sid):
+        sub = Subscription(path, sid, qos)
+        try:
+            prev = self.value_sub_paths[path]
+        except KeyError:
+            prev = None
+        if prev is not None:
+            del self.value_sub_sids[sid]
+            # TODO: updates
+        self.value_sub_sids[sid] = path
+        self.value_lock.release()
+
+        # TODO: this is a hack to get our new code running properly
+        node.add_subscriber(sid)
+
+    def remove_value_sub(self, sid):
         """
         Remove a Subscription to a Node.
         :param sid: SID of Subscription.
         """
-        try:
-            self.subscriptions[sid]["node"].remove_subscriber(sid)
-            del self.subscriptions[sid]
-        except KeyError:
-            self.link.logger.debug("Unknown sid %s" % sid)
+        self.value_lock.acquire()
+        if sid in self.value_sub_sids:
+            path = self.value_sub_sids[sid]
+            del self.value_sub_sids[sid]
+            if path in self.value_sub_paths:
+                del self.value_sub_paths[path]
+        self.value_lock.release()
 
     def send_value_update(self, node):
         msg = {
             "responses": []
         }
         for sid in node.subscribers:
-            if not self.link.active and self.subscriptions[sid]["qos"] > 0:
-                self.link.storage.store(self.subscriptions[sid], node.value)
+            # TODO: below
+            #if not self.link.active and self.value_sub_paths[node.path]["qos"] > 0:
+                #self.link.storage.store(self.value_sub_paths[node.path], node.value)
+                #self.link.storage.store(self.value_sub_paths[node.path], node.value)
             msg["responses"].append({
                 "rid": 0,
                 "updates": [

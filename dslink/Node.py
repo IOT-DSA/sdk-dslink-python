@@ -458,6 +458,22 @@ class Node:
 
         return node
 
+    @staticmethod
+    def normalize_path(path, leading):
+        """
+        :param path: Path to normalize.
+        :param leading: True if leading forward slash is kept/added, false if not.
+        :return: Normalized path.
+        """
+        if not leading and path.startswith("/"):
+            path = path[1:]
+        elif leading and not path.startswith("/"):
+            path = "/" + path
+        if path.endswith("/"):
+            path = path[:-1]
+
+        return path
+
 
 class RemoteNode(Node):
     def __init__(self, name, parent, parent_path=None):
