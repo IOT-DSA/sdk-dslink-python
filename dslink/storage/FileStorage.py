@@ -60,6 +60,7 @@ class FileStorage(StorageDriver):
                     value.updated_at = array[1]
                     value.value = array[2]
                     queue.append(value)
+        return ret
 
     def store(self, subscription, value):
         qos = subscription.qos
@@ -106,6 +107,10 @@ class FileStorage(StorageDriver):
             pickle.dump(json_obj, file)
             file.close()
 
-    def get_updates(self, subscription):
+    def get_updates(self, path, sid):
+        cache = self.updates_cache.pop(path)
+        tmp = self.updates_cache[path]
+        if tmp is not None:
+            pass
         # TODO
-        pass
+

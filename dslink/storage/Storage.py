@@ -14,5 +14,5 @@ class StorageDriver:
         """
         pass
 
-    def get_updates(self, subscription):
+    def get_updates(self, path, sid):
         pass

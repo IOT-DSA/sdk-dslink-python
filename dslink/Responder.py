@@ -1,3 +1,4 @@
+from __future__ import print_function
 from dslink.Profile import ProfileManager
 from dslink.Node import Node
 
@@ -126,7 +127,10 @@ class LocalSubscriptionManager:
         self.value_lock = Lock()
         self.path_subs = {}
         self.sids_path = {}
-        self.link.storage.read()
+        subs = self.link.storage.read()
+        for path in subs:
+            sub = subs[path]
+            self.path_subs[path] = Subscription(path, [], sub["qos"])
 
     def get_sub(self, path):
         path = Node.normalize_path(path, True)
@@ -148,6 +152,9 @@ class LocalSubscriptionManager:
             self.path_subs[path] = sub
         else:
             self.path_subs[path].sids.append(sid)
+            # Set the QoS to the highest requested.
+            if self.path_subs[path].qos < qos:
+                self.path_subs[path].qos = qos
         self.sids_path[sid] = path
         # TODO: qos updates
 
