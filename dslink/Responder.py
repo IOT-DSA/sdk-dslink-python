@@ -126,6 +126,7 @@ class LocalSubscriptionManager:
         self.value_lock = Lock()
         self.path_subs = {}
         self.sids_path = {}
+        self.link.storage.read()
 
     def get_sub(self, path):
         path = Node.normalize_path(path, True)
@@ -148,10 +149,8 @@ class LocalSubscriptionManager:
         else:
             self.path_subs[path].sids.append(sid)
         self.sids_path[sid] = path
-        # TODO: updates
+        # TODO: qos updates
 
-        # TODO: this is a hack to get our new code running properly
-        #node.add_subscriber(sid)
         node.update_subscribers_values()
 
     def remove_value_sub(self, sid):
@@ -171,9 +170,8 @@ class LocalSubscriptionManager:
         }
         for sid in self.path_subs[node.path].sids:
             # TODO: below
-            #if not self.link.active and self.value_sub_paths[node.path]["qos"] > 0:
-                #self.link.storage.store(self.value_sub_paths[node.path], node.value)
-                #self.link.storage.store(self.value_sub_paths[node.path], node.value)
+            if not self.link.active and self.path_subs[node.path].qos > 0:
+                self.link.storage.store(self.path_subs[node.path], node.value)
             msg["responses"].append({
                 "rid": 0,
                 "updates": [

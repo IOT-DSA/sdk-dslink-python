@@ -1,8 +1,10 @@
 from dslink.Util import *
+from dslink.Value import Value
 from dslink.storage.Storage import StorageDriver
 
 import json
 import os
+import pickle
 
 
 class FileStorage(StorageDriver):
@@ -20,10 +22,9 @@ class FileStorage(StorageDriver):
         if len(files) is 0:
             return
         for f in files:
-            file = open(self.storage + "/" + f, "r")
-            data = file.readline()
+            file = open(self.storage + "/" + f, "rb")
+            json_obj = pickle.load(file)
             file.close()
-            json_obj = json.loads(data)
             qos = json_obj["qos"]
             path = base64_decode(f)
             sub = {
@@ -32,27 +33,54 @@ class FileStorage(StorageDriver):
             }
             ret[path] = sub
             if qos is 2:
-                ts = json_obj["ts"]
+                value = Value()
+                value.type = json_obj["type"]
+                value.updated_at = json_obj["ts"]
+                value.value = json_obj["value"]
+                self.store(sub, value)
+                self.update_cache[path] = value
+            elif qos is 3:
+                try:
+                    import_queue = json_obj["queue"]
+                except KeyError:
+                    continue
+
+                if path not in self.updates_cache or sub["path"] not in self.updates_cache:
+                    queue = []
+                elif path in self.updates_cache:
+                    queue = self.updates_cache[path]
+                elif sub["path"] in self.updates_cache:
+                    queue = self.updates_cache[sub["path"]]
+                else:
+                    continue
+
+                for array in import_queue:
+                    value = Value()
+                    value.type = array[0]
+                    value.updated_at = array[1]
+                    value.value = array[2]
+                    queue.append(value)
 
     def store(self, subscription, value):
-        qos = subscription["qos"]
+        qos = subscription.qos
         json_obj = None
         if qos is 2:
-            self.update_cache[subscription["node"].path] = value
+            self.update_cache[subscription.path] = value
             json_obj = {
                 "qos": 2
             }
             if value is not None:
+                json_obj["type"] = value.type
+                json_obj["ts"] = value.updated_at
                 json_obj["value"] = value.value
-                json_obj["ts"] = value.updated_at.isoformat()
         elif qos is 3:
             if value is None:
                 return
-            if subscription["node"].path in self.updates_cache:
-                cache = self.updates_cache[subscription["node"].path]
+            if subscription.path in self.updates_cache:
+                cache = self.updates_cache[subscription.path]
             else:
                 cache = []
-                self.updates_cache[subscription["node"].path] = cache
+                self.updates_cache[subscription.path] = cache
             cache.append(value)
             if len(cache) > 1000:
                 del cache[0]
@@ -66,16 +94,18 @@ class FileStorage(StorageDriver):
                     queue.append(None)
                 else:
                     array = [
-                        v.value,
-                        v.updated_at.isoformat()
+                        v.type,
+                        v.updated_at,
+                        v.value
                     ]
                     queue.append(array)
         if json_obj is not None:
             if not(os.path.exists(self.storage) or os.mkdir(self.storage)):
                 pass
-            file = open(self.storage + base64_encode(subscription["node"].path), "w")
-            file.write(json.dumps(json_obj))
+            file = open(self.storage + base64_encode(subscription.path), "wb")
+            pickle.dump(json_obj, file)
             file.close()
 
     def get_updates(self, subscription):
+        # TODO
         pass
