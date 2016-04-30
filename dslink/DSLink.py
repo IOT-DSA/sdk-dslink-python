@@ -80,7 +80,8 @@ class DSLink:
         Be sure to call the super function.
         :param args: Signal arguments.
         """
-        reactor.callFromThread(self.wsp.sendClose)
+        if self.wsp is not None:
+            reactor.callFromThread(self.wsp.sendClose)
         reactor.removeAll()
         reactor.iterate()
         reactor.stop()
