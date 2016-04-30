@@ -108,10 +108,11 @@ class Responder:
             self.nodes_changed = False
 
 
+# TODO: maybe rename to something more fitting?
 class Subscription:
-    def __init__(self, path, sid, qos):
+    def __init__(self, path, sids, qos):
         self.path = path
-        self.sid = sid
+        self.sids = sids
         self.qos = qos
 
 
@@ -124,8 +125,13 @@ class LocalSubscriptionManager:
         self.link = link
         self.value_lock = Lock()
         self.path_subs = {}
-        self.value_sub_paths = {}
-        self.value_sub_sids = {}
+        self.sids_path = {}
+
+    def get_sub(self, path):
+        path = Node.normalize_path(path, True)
+        if path not in self.path_subs:
+            return None
+        return self.path_subs[path]
 
     def add_value_sub(self, node, sid, qos=0):
         """
@@ -135,40 +141,35 @@ class LocalSubscriptionManager:
         :param qos: Quality of Service.
         """
         path = Node.normalize_path(node.path, True)
-        self.value_lock.acquire()
 
-        sub = Subscription(path, sid, qos)
-        try:
-            prev = self.value_sub_paths[path]
-        except KeyError:
-            prev = None
-        if prev is not None:
-            del self.value_sub_sids[sid]
-            # TODO: updates
-        self.value_sub_sids[sid] = path
-        self.value_lock.release()
+        if path not in self.path_subs:
+            sub = Subscription(path, [sid], qos)
+            self.path_subs[path] = sub
+        else:
+            self.path_subs[path].sids.append(sid)
+        self.sids_path[sid] = path
+        # TODO: updates
 
         # TODO: this is a hack to get our new code running properly
-        node.add_subscriber(sid)
+        #node.add_subscriber(sid)
+        node.update_subscribers_values()
 
     def remove_value_sub(self, sid):
         """
         Remove a Subscription to a Node.
         :param sid: SID of Subscription.
         """
-        self.value_lock.acquire()
-        if sid in self.value_sub_sids:
-            path = self.value_sub_sids[sid]
-            del self.value_sub_sids[sid]
-            if path in self.value_sub_paths:
-                del self.value_sub_paths[path]
-        self.value_lock.release()
+        if sid in self.sids_path:
+            path = self.sids_path[sid]
+            del self.sids_path[sid]
+            if path in self.path_subs:
+                self.path_subs[path].sids.remove(sid)
 
     def send_value_update(self, node):
         msg = {
             "responses": []
         }
-        for sid in node.subscribers:
+        for sid in self.path_subs[node.path].sids:
             # TODO: below
             #if not self.link.active and self.value_sub_paths[node.path]["qos"] > 0:
                 #self.link.storage.store(self.value_sub_paths[node.path], node.value)

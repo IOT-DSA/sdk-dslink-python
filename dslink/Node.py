@@ -29,7 +29,6 @@ class Node:
         self.children_lock = Lock()
         self.config = OrderedDict([("$is", "node")])
         self.attributes = OrderedDict()
-        self.subscribers = []
         self.streams = []
         self.removed_children = []
         self.removed_children_lock = Lock()
@@ -85,7 +84,6 @@ class Node:
         i = self.value.set_value(value, check)
         if i and (not self.standalone or self.link_is_active()):
             self.nodes_changed()
-            # Update any subscribers
             self.update_subscribers_values()
             if trigger_callback:
                 if hasattr(self.set_value_callback, "__call__"):
@@ -353,10 +351,13 @@ class Node:
 
     def is_subscribed(self):
         """
-        Is the Node subscribed to?
+        Check whether the Node is subscribed to.
         :return: True if the Node is subscribed to.
         """
-        return len(self.subscribers) is not 0
+        sub = self.link.responder.subscription_manager.get_sub(self.path)
+        if sub is None:
+            return False
+        return len(sub.sids) is not 0
 
     def invoke(self, params):
         """
@@ -393,21 +394,6 @@ class Node:
         """
         if self.value.has_value():
             self.link.responder.subscription_manager.send_value_update(self)
-
-    def add_subscriber(self, sid):
-        """
-        Add a Subscriber.
-        :param sid: Subscriber ID.
-        """
-        self.subscribers.append(sid)
-        self.update_subscribers_values()
-
-    def remove_subscriber(self, sid):
-        """
-        Remove a Subscriber.
-        :param sid: Subscriber ID.
-        """
-        self.subscribers.remove(sid)
 
     def to_json(self):
         """
@@ -492,12 +478,6 @@ class RemoteNode(Node):
         pass
 
     def add_child(self, child):
-        pass
-
-    def add_subscriber(self, sid):
-        pass
-
-    def remove_subscriber(self, sid):
         pass
 
     def nodes_changed(self):
