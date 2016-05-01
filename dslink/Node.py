@@ -217,10 +217,14 @@ class Node:
         :return: Node stream.
         """
         out = []
-        for c in self.config:
-            out.append([c, self.config[c]])
-        for a in self.attributes:
-            out.append([a, self.attributes[a]])
+        for key in self.config:
+            value = self.config[key]
+            if key == "$$password":
+                value = None
+            out.append([key, value])
+        for key in self.attributes:
+            value = self.attributes[key]
+            out.append([key, value])
         with self.children_lock:
             for child in self.children:
                 child = self.children[child]
@@ -231,12 +235,14 @@ class Node:
                     }
                 else:
                     val = {}
-                i = dict(child.config)
-                i.update(child.attributes)
-                i.update(val)
+                child_data = dict(child.config)
+                child_data.update(child.attributes)
+                child_data.update(val)
+                if "$$password" in child_data:
+                    child_data["$$password"] = None
                 out.append([
                     child.name,
-                    i
+                    child_data
                 ])
         with self.removed_children_lock:
             for child in self.removed_children:

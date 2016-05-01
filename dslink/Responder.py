@@ -4,7 +4,6 @@ from dslink.Node import Node
 
 import json
 import os.path
-from threading import Lock
 from twisted.internet import task
 
 
@@ -124,7 +123,6 @@ class LocalSubscriptionManager:
 
     def __init__(self, link):
         self.link = link
-        self.value_lock = Lock()
         self.path_subs = {}
         self.sids_path = {}
         subs = self.link.storage.read()
