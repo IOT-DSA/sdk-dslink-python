@@ -8,8 +8,9 @@ import pickle
 
 
 class FileStorage(StorageDriver):
-    def __init__(self, path="storage/"):
+    def __init__(self, link, path="storage/"):
         StorageDriver.__init__(self)
+        self.link = link
         self.storage = path
         self.updates_cache = {}
         self.update_cache = {}
@@ -108,9 +109,25 @@ class FileStorage(StorageDriver):
             file.close()
 
     def get_updates(self, path, sid):
-        cache = self.updates_cache.pop(path)
-        tmp = self.updates_cache[path]
+        cache = self.updates_cache.pop(path, None)
+        tmp = self.updates_cache.pop(path, None)
         if tmp is not None:
-            pass
-        # TODO
-
+            return [
+                sid,
+                tmp.value.value,
+                tmp.value.updated_at.isoformat()
+            ]
+        if cache is None or len(cache) is 0:
+            return None
+        updates = []
+        for val in cache:
+            update = [
+                sid,
+                val.value,
+                val.updated_at.isoformat()
+            ]
+            updates.append(update)
+            file_path = self.storage + base64_encode(path)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        return updates

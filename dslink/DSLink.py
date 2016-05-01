@@ -32,7 +32,7 @@ class DSLink:
         # DSLink Configuration
         self.config = config
         self.server_config = None
-        self.storage = FileStorage()
+        self.storage = FileStorage(self)
 
         # Logger setup
         self.logger = self.create_logger("DSLink", self.config.log_level)

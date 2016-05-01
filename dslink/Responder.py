@@ -157,8 +157,18 @@ class LocalSubscriptionManager:
                 self.path_subs[path].qos = qos
         self.sids_path[sid] = path
         # TODO: qos updates
-
-        node.update_subscribers_values()
+        updates = self.link.storage.get_updates(path, sid)
+        if updates is not None:
+            self.link.wsp.sendMessage({
+                "responses": [
+                    {
+                        "rid": 0,
+                        "updates": updates
+                    }
+                ]
+            })
+        else:
+            node.update_subscribers_values()
 
     def remove_value_sub(self, sid):
         """
