@@ -29,12 +29,12 @@ class Node:
         self.children_lock = Lock()
         self.config = OrderedDict([("$is", "node")])
         self.attributes = OrderedDict()
-        self.subscribers = []
         self.streams = []
         self.removed_children = []
         self.removed_children_lock = Lock()
         # TODO(logangorence): Deprecate for v0.6
         self.set_value_callback = None
+        # TODO(logangorence): Normalize path?
         if parent is not None:
             self.name = name
             if parent.path.endswith("/"):
@@ -85,7 +85,6 @@ class Node:
         i = self.value.set_value(value, check)
         if i and (not self.standalone or self.link_is_active()):
             self.nodes_changed()
-            # Update any subscribers
             self.update_subscribers_values()
             if trigger_callback:
                 if hasattr(self.set_value_callback, "__call__"):
@@ -219,10 +218,14 @@ class Node:
         :return: Node stream.
         """
         out = []
-        for c in self.config:
-            out.append([c, self.config[c]])
-        for a in self.attributes:
-            out.append([a, self.attributes[a]])
+        for key in self.config:
+            value = self.config[key]
+            if key == "$$password":
+                value = None
+            out.append([key, value])
+        for key in self.attributes:
+            value = self.attributes[key]
+            out.append([key, value])
         with self.children_lock:
             for child in self.children:
                 child = self.children[child]
@@ -233,12 +236,14 @@ class Node:
                     }
                 else:
                     val = {}
-                i = dict(child.config)
-                i.update(child.attributes)
-                i.update(val)
+                child_data = dict(child.config)
+                child_data.update(child.attributes)
+                child_data.update(val)
+                if "$$password" in child_data:
+                    child_data["$$password"] = None
                 out.append([
                     child.name,
-                    i
+                    child_data
                 ])
         with self.removed_children_lock:
             for child in self.removed_children:
@@ -353,10 +358,13 @@ class Node:
 
     def is_subscribed(self):
         """
-        Is the Node subscribed to?
+        Check whether the Node is subscribed to.
         :return: True if the Node is subscribed to.
         """
-        return len(self.subscribers) is not 0
+        sub = self.link.responder.subscription_manager.get_sub(self.path)
+        if sub is None:
+            return False
+        return len(sub.sid_qos) is not 0
 
     def invoke(self, params):
         """
@@ -392,37 +400,7 @@ class Node:
         Update all Subscribers of a Value change.
         """
         if self.value.has_value():
-            msg = {
-                "responses": []
-            }
-            for s in self.subscribers:
-                msg["responses"].append({
-                    "rid": 0,
-                    "updates": [
-                        [
-                            s,
-                            self.value.value,
-                            self.value.updated_at.isoformat()
-                        ]
-                    ]
-                })
-            if len(msg["responses"]) is not 0:
-                self.link.wsp.sendMessage(msg)
-
-    def add_subscriber(self, sid):
-        """
-        Add a Subscriber.
-        :param sid: Subscriber ID.
-        """
-        self.subscribers.append(sid)
-        self.update_subscribers_values()
-
-    def remove_subscriber(self, sid):
-        """
-        Remove a Subscriber.
-        :param sid: Subscriber ID.
-        """
-        self.subscribers.remove(sid)
+            self.link.responder.subscription_manager.send_value_update(self)
 
     def to_json(self):
         """
@@ -473,6 +451,22 @@ class Node:
 
         return node
 
+    @staticmethod
+    def normalize_path(path, leading):
+        """
+        :param path: Path to normalize.
+        :param leading: True if leading forward slash is kept/added, false if not.
+        :return: Normalized path.
+        """
+        if not leading and path.startswith("/"):
+            path = path[1:]
+        elif leading and not path.startswith("/"):
+            path = "/" + path
+        if path.endswith("/"):
+            path = path[:-1]
+
+        return path
+
 
 class RemoteNode(Node):
     def __init__(self, name, parent, parent_path=None):
@@ -491,12 +485,6 @@ class RemoteNode(Node):
         pass
 
     def add_child(self, child):
-        pass
-
-    def add_subscriber(self, sid):
-        pass
-
-    def remove_subscriber(self, sid):
         pass
 
     def nodes_changed(self):

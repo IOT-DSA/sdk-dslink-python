@@ -7,7 +7,7 @@ import logging
 
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
 from autobahn.websocket.protocol import parseWsUrl
-from twisted.internet import reactor
+from twisted.internet import reactor, task
 from twisted.internet.protocol import ReconnectingClientFactory
 
 
@@ -28,23 +28,29 @@ class WebSocket:
         factory.protocol = DSAWebSocket
 
         link.logger.debug("Connecting WebSocket to %s" % websocket_uri)
-        reactor.connectTCP(url.hostname, port, factory)
+        self.connector = reactor.connectTCP(url.hostname, port, factory)
 
 
 class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
     def __init__(self, websocket_uri, link):
         super(DSAWebSocketFactory, self).__init__(websocket_uri)
         self.link = link
+        self.cooldown = 1
     
     def clientConnectionFailed(self, connector, reason):
-        print("Failed to connect, retrying...")
-        self.link.handshake.run_handshake()
-        self.reset_url()
-        self.retry(connector)
+        self.link.logger.info("Failed to connect")
+        reactor.callLater(1, self.reconnect, connector)
 
     def clientConnectionLost(self, connector, unused_reason):
-        print("Connection lost, retrying...")
-        self.link.handshake.run_handshake()
+        self.link.logger.info("Connection lost")
+        reactor.callLater(1, self.reconnect, connector)
+
+    def reconnect(self, connector):
+        if not self.link.handshake.run_handshake():
+            if self.cooldown <= 60:
+                self.cooldown += 1
+            reactor.callLater(self.cooldown, self.reconnect, connector)
+            return
         self.reset_url()
         self.retry(connector)
 
@@ -60,8 +66,8 @@ class DSAWebSocket(WebSocketClientProtocol):
     """
     def __init__(self):
         """
-            Constructor for DSAWebSocket.
-            """
+        Constructor for DSAWebSocket.
+        """
         super(DSAWebSocket, self).__init__()
         self.msg = 0
         self.logger = logging.getLogger("DSLink")
@@ -72,10 +78,10 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         Send a blank object for a ping.
         """
-        self.logger.debug("Sent ping")
-        # noinspection PyTypeChecker
-        self.sendMessage({})
-        reactor.callLater(self.link.config.ping_time, self.sendPingMsg)
+        if self.link.active:
+            self.logger.debug("Ping")
+            # noinspection PyTypeChecker
+            self.sendMessage({})
 
     def onOpen(self):
         """
@@ -83,7 +89,7 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         self.link.active = True
         self.logger.info("WebSocket Connection Established")
-        self.sendPingMsg()
+        task.LoopingCall(self.sendPingMsg).start(self.link.config.ping_time)
 
     def onClose(self, wasClean, code, reason):
         """

@@ -1,3 +1,5 @@
+import datetime
+
 from dslink.Response import Response
 
 import logging
@@ -23,33 +25,39 @@ class Request:
         if self.method == "list":
             self.logger.debug("List method")
             node = self.link.responder.get_super_root().get(self.request["path"])
+            resp = Response({
+                "rid": self.rid,
+                "stream": "open"
+            })
             if node is not None:
                 self.link.responder.stream_manager.open_stream(node, self.rid)
-                return Response({
-                    "rid": self.rid,
-                    "stream": "open",
-                    "updates": node.stream()
-                })
+                resp.json["updates"] = node.stream()
             else:
-                return Response({
-                    "rid": self.rid,
-                    "stream": "closed"
-                })
+                resp.json["updates"] = [
+                    [
+                        "$disconnectedTs",
+                        datetime.datetime.now().isoformat()
+                    ]
+                ]
+            return resp
         elif self.method == "subscribe":
             self.logger.debug("Subscribe method")
             for sub in self.request["paths"]:
                 node = self.link.responder.get_super_root().get(sub["path"])
                 if node is not None:
-                    self.link.responder.subscription_manager.subscribe(node, sub["sid"])
+                    qos = 0
+                    if "qos" in sub:
+                        qos = sub["qos"]
+                    self.link.responder.subscription_manager.add_value_sub(node, sub["sid"], qos)
                     self.logger.debug("Subscription added")
             return Response({
                 "rid": self.rid,
                 "stream": "closed"
             })
         elif self.method == "unsubscribe":
-            self.logger.debug("Unsubscribe method")
             for sid in self.request["sids"]:
-                self.link.responder.subscription_manager.unsubscribe(sid)
+                self.logger.debug("Unsubscribe from sid %s" % sid)
+                self.link.responder.subscription_manager.remove_value_sub(sid)
             return Response({
                 "rid": self.rid,
                 "stream": "closed"

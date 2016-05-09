@@ -1,16 +1,23 @@
 import dslink
-from twisted.internet import reactor
+
 
 class SubscribeDSLink(dslink.DSLink):
-    i=0
+    def __init__(self, config):
+        self.i = 0
+        dslink.DSLink.__init__(self, config)
+
     def start(self):
         self.requester.subscribe("/data/test", self.value_update)
-        #reactor.callLater(5, self.unsubscribe)
 
     def value_update(self, data):
-        #print "Data: ", data[0]
-        SubscribeDSLink.i = SubscribeDSLink.i+1
-        print "Count: ", (SubscribeDSLink.i)
+        got = int(data[0][-6:])
+        if got != self.i:
+            #print(data[3])
+            print("%s != %s" % (got, self.i))
+            print("%s %s %s" % (data[3], data[4], data[5]))
+            self.i = got + 1
+        else:
+            self.i += 1
 
 if __name__ == "__main__":
     SubscribeDSLink(dslink.Configuration("subscribe", requester=True, responder=True))
