@@ -66,8 +66,8 @@ class DSAWebSocket(WebSocketClientProtocol):
     """
     def __init__(self):
         """
-            Constructor for DSAWebSocket.
-            """
+        Constructor for DSAWebSocket.
+        """
         super(DSAWebSocket, self).__init__()
         self.msg = 0
         self.logger = logging.getLogger("DSLink")

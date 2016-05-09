@@ -2,7 +2,7 @@ from dslink.Util import *
 from dslink.Value import Value
 from dslink.storage.Storage import StorageDriver
 
-import json
+import copy
 import os
 import pickle
 
@@ -18,10 +18,10 @@ class FileStorage(StorageDriver):
     def read(self):
         ret = {}
         if not os.path.isdir(self.storage):
-            return
+            return ret
         files = os.listdir(self.storage)
         if len(files) is 0:
-            return
+            return ret
         for f in files:
             file = open(self.storage + "/" + f, "rb")
             json_obj = pickle.load(file)
@@ -63,44 +63,59 @@ class FileStorage(StorageDriver):
                     queue.append(value)
         return ret
 
-    def store(self, subscription, value):
-        qos = subscription.qos
-        json_obj = None
-        if qos is 2:
-            self.update_cache[subscription.path] = value
-            json_obj = {
-                "qos": 2
-            }
-            if value is not None:
-                json_obj["type"] = value.type
-                json_obj["ts"] = value.updated_at
-                json_obj["value"] = value.value
-        elif qos is 3:
+    def store_qos2(self, subscription, value, json_obj):
+        self.update_cache[subscription.path] = value
+        json_obj = {
+            "qos": 2
+        }
+        if value is not None:
+            json_obj["type"] = value.type
+            json_obj["ts"] = value.updated_at
+            json_obj["value"] = value.value
+        return json_obj
+
+    def store_qos3(self, subscription, value, json_obj):
+        if value is None:
+            return json_obj
+        if subscription.path in self.updates_cache:
+            cache = self.updates_cache[subscription.path]
+        else:
+            cache = []
+            self.updates_cache[subscription.path] = cache
+        cache.append(copy.copy(value))
+        if len(cache) > 1000:
+            del cache[0]
+        queue = []
+        json_obj = {
+            "queue": queue,
+            "qos": 3
+        }
+        for v in cache:
             if value is None:
-                return
-            if subscription.path in self.updates_cache:
-                cache = self.updates_cache[subscription.path]
+                queue.append(None)
             else:
-                cache = []
-                self.updates_cache[subscription.path] = cache
-            cache.append(value)
-            if len(cache) > 1000:
-                del cache[0]
-            queue = []
-            json_obj = {
-                "queue": queue,
-                "qos": 3
-            }
-            for v in cache:
-                if value is None:
-                    queue.append(None)
-                else:
-                    array = [
-                        v.type,
-                        v.updated_at,
-                        v.value
-                    ]
-                    queue.append(array)
+                array = [
+                    v.type,
+                    v.updated_at,
+                    v.value
+                ]
+                queue.append(array)
+        return json_obj
+
+    def store(self, subscription, value):
+        qos2 = False
+        qos3 = False
+        for sid in subscription.sid_qos:
+            qos = subscription.sid_qos[sid]
+            if qos is 2:
+                qos2 = True
+            if qos is 3:
+                qos3 = True
+        json_obj = None
+        if qos2:
+            json_obj = self.store_qos2(subscription, value, json_obj)
+        if qos3:
+            json_obj = self.store_qos3(subscription, value, json_obj)
         if json_obj is not None:
             if not(os.path.exists(self.storage) or os.mkdir(self.storage)):
                 pass
@@ -121,6 +136,7 @@ class FileStorage(StorageDriver):
             return None
         updates = []
         for val in cache:
+            print("replaying " + str(val.value))
             update = [
                 sid,
                 val.value,

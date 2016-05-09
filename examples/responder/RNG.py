@@ -110,9 +110,9 @@ class RNGDSLink(DSLink):
     def update_rng(self):
         self.logger.debug("Updated RNG values")
         for rng in self.rngs:
-            if self.rngs[rng].is_subscribed():
+            #if self.rngs[rng].is_subscribed():
                 self.rngs[rng].set_value(random.randint(0, 1000))
         reactor.callLater(self.speed, self.update_rng)
 
 if __name__ == "__main__":
-    RNGDSLink(Configuration("python-rng", responder=True, requester=True, no_save_nodes=True))
+    RNGDSLink(Configuration("python-rng", responder=True, requester=True))

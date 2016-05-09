@@ -34,6 +34,7 @@ class Node:
         self.removed_children_lock = Lock()
         # TODO(logangorence): Deprecate for v0.6
         self.set_value_callback = None
+        # TODO(logangorence): Normalize path?
         if parent is not None:
             self.name = name
             if parent.path.endswith("/"):
@@ -363,7 +364,7 @@ class Node:
         sub = self.link.responder.subscription_manager.get_sub(self.path)
         if sub is None:
             return False
-        return len(sub.sids) is not 0
+        return len(sub.sid_qos) is not 0
 
     def invoke(self, params):
         """

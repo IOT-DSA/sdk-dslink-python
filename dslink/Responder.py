@@ -110,10 +110,9 @@ class Responder:
 
 # TODO: maybe rename to something more fitting?
 class Subscription:
-    def __init__(self, path, sids, qos):
+    def __init__(self, path, sid_qos):
         self.path = path
-        self.sids = sids
-        self.qos = qos
+        self.sid_qos = sid_qos
 
 
 class LocalSubscriptionManager:
@@ -128,7 +127,7 @@ class LocalSubscriptionManager:
         subs = self.link.storage.read()
         for path in subs:
             sub = subs[path]
-            self.path_subs[path] = Subscription(path, [], sub["qos"])
+            self.path_subs[path] = Subscription(path, {-1: sub["qos"]})
 
     def get_sub(self, path):
         path = Node.normalize_path(path, True)
@@ -146,15 +145,12 @@ class LocalSubscriptionManager:
         path = Node.normalize_path(node.path, True)
 
         if path not in self.path_subs:
-            sub = Subscription(path, [sid], qos)
+            sub = Subscription(path, {sid: qos})
             self.path_subs[path] = sub
         else:
-            self.path_subs[path].sids.append(sid)
-            # Set the QoS to the highest requested.
-            if self.path_subs[path].qos < qos:
-                self.path_subs[path].qos = qos
+            self.path_subs[path].sid_qos[sid] = qos
+            self.path_subs[path].qos = qos
         self.sids_path[sid] = path
-        # TODO: qos updates
         updates = self.link.storage.get_updates(path, sid)
         if updates is not None:
             self.link.wsp.sendMessage({
@@ -177,15 +173,17 @@ class LocalSubscriptionManager:
             path = self.sids_path[sid]
             del self.sids_path[sid]
             if path in self.path_subs:
-                self.path_subs[path].sids.remove(sid)
+                del self.path_subs[path].sid_qos[sid]
 
     def send_value_update(self, node):
+        if node.path not in self.path_subs:
+            return
         msg = {
             "responses": []
         }
-        for sid in self.path_subs[node.path].sids:
-            # TODO: below
-            if not self.link.active and self.path_subs[node.path].qos > 0:
+        for sid in self.path_subs[node.path].sid_qos:
+            qos = self.path_subs[node.path].sid_qos[sid]
+            if not self.link.active and qos > 0:
                 self.link.storage.store(self.path_subs[node.path], node.value)
             msg["responses"].append({
                 "rid": 0,
