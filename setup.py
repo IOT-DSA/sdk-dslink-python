@@ -13,10 +13,10 @@ setup(
         "dslink.storage"
     ],
     install_requires=[
-        "autobahn == 0.12.1",
+        "autobahn == 0.14.0",
         "pyelliptic == 1.5.7",
         "requests == 2.9.1",
-        "zope.interface == 4.1.3"
-    ],
-    use_2to3=True
+        "zope.interface == 4.1.3",
+        "Twisted == 12.1.0"
+    ]
 )
