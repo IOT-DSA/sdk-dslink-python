@@ -6,7 +6,7 @@ import json
 import logging
 
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
-from autobahn.websocket.protocol import parseWsUrl
+from autobahn.websocket.util import parse_url
 from twisted.internet import reactor, task
 from twisted.internet.protocol import ReconnectingClientFactory
 
@@ -57,7 +57,7 @@ class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
     def reset_url(self):
         websocket_uri, url, port = self.link.get_url()
         self.url = websocket_uri
-        (self.isSecure, self.host, self.port, self.resource, self.path, self.params) = parseWsUrl(websocket_uri)
+        (self.isSecure, self.host, self.port, self.resource, self.path, self.params) = parse_url(websocket_uri)
 
 
 class DSAWebSocket(WebSocketClientProtocol):
