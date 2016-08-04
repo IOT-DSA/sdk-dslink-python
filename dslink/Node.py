@@ -1,5 +1,5 @@
-from dslink.Response import Response
-from dslink.Value import Value
+from .Response import Response
+from .Value import Value
 
 from collections import OrderedDict
 import logging

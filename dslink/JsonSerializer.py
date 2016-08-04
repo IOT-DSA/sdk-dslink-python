@@ -1,4 +1,4 @@
-from dslink.Util import *
+from .Util import *
 
 import json
 

@@ -1,10 +1,12 @@
-from dslink.DSLink import DSLink, Configuration
-from dslink.Node import Node
-from dslink.Permission import Permission
-from dslink.Profile import Profile
-from dslink.Requester import Requester
-from dslink.Response import *
-from dslink.Value import Value
+from .DSLink import DSLink, Configuration
+from .FileStorage import FileStorage
+from .Node import Node
+from .Permission import Permission
+from .Profile import Profile
+from .Requester import Requester
+from .Response import *
+from .Storage import StorageDriver
+from .Value import Value
 
 __title__ = "dslink"
 __version__ = "0.6.16"

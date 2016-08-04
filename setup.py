@@ -10,13 +10,13 @@ setup(
     license="Apache 2.0",
     packages=[
         "dslink",
-        "dslink.storage"
     ],
     install_requires=[
-        "autobahn == 0.14.0",
+        "autobahn == 0.15.0",
         "pyelliptic == 1.5.7",
-        "requests == 2.9.1",
-        "zope.interface == 4.1.3",
-        "Twisted == 12.1.0"
-    ]
+        "requests == 2.10.0",
+        "zope.interface == 4.2.0",
+        "Twisted == 16.3.0"
+    ],
+    use_2to3=True
 )

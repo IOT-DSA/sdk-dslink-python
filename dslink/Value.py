@@ -1,5 +1,5 @@
 # coding=utf-8
-from dslink.Util import base64_decode
+from .Util import base64_decode
 
 from datetime import datetime
 

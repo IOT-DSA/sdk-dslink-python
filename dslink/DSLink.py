@@ -1,18 +1,20 @@
-from dslink.Crypto import Keypair
-from dslink.Handshake import Handshake
-from dslink.Requester import Requester
-from dslink.Responder import Responder
-from dslink.WebSocket import WebSocket
-from dslink.storage.FileStorage import FileStorage
-
 import argparse
 import base64
 import hashlib
 import logging
-from urlparse import urlparse
 import signal
-import sys
 from twisted.internet import reactor
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib import parse as urlparse
+
+from .FileStorage import FileStorage
+from .Crypto import Keypair
+from .Handshake import Handshake
+from .Requester import Requester
+from .Responder import Responder
+from .WebSocket import WebSocket
 
 
 class DSLink:
@@ -100,7 +102,8 @@ class DSLink:
         Get auth parameter for connection.
         :return: Auth parameter.
         """
-        auth = str(self.server_config["salt"]) + self.shared_secret
+        auth = self.server_config["salt"].encode("ascii", "ignore")
+        auth += self.shared_secret
         auth = base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
         return auth
 
@@ -115,7 +118,7 @@ class DSLink:
         token = self.config.token_hash(self.dsid, self.config.token)
         if token is not None:
             websocket_uri += token
-        url = urlparse(websocket_uri)
+        url = urlparse.urlparse(websocket_uri)
         if url.port is None:
             port = 80
         else:

@@ -1,6 +1,6 @@
 from __future__ import print_function
-from dslink.Profile import ProfileManager
-from dslink.Node import Node
+from .Profile import ProfileManager
+from .Node import Node
 
 import json
 import os.path

@@ -1,6 +1,6 @@
-from dslink.JsonSerializer import JsonEncoder
-from dslink.Request import Request
-from dslink.Response import Response
+from .JsonSerializer import JsonEncoder
+from .Request import Request
+from .Response import Response
 
 import json
 import logging

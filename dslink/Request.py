@@ -1,6 +1,6 @@
 import datetime
 
-from dslink.Response import Response
+from .Response import Response
 
 import logging
 

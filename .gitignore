@@ -9,4 +9,5 @@ __pycache__
 nodes.json
 nodes.json.bak
 examples/*/storage/
+/packages*/
 
