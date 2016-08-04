@@ -1,4 +1,5 @@
 # DSLink SDK for Python
+[![PyPI version](https://badge.fury.io/py/dslink.svg)](https://badge.fury.io/py/dslink)
 
 DSLink SDK for Python.
 
