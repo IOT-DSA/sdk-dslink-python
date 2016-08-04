@@ -118,7 +118,7 @@ class DSLink:
         token = self.config.token_hash(self.dsid, self.config.token)
         if token is not None:
             websocket_uri += token
-        url = urlparse.urlparse(websocket_uri)
+        url = urlparse(websocket_uri)
         if url.port is None:
             port = 80
         else:
