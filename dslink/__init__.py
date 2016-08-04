@@ -9,7 +9,7 @@ from .Storage import StorageDriver
 from .Value import Value
 
 __title__ = "dslink"
-__version__ = "0.6.16"
+__version__ = "0.6.17"
 __author__ = "Logan Gorence"
 
 __license__ = "Apache 2.0"
