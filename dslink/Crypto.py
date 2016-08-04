@@ -36,7 +36,11 @@ class Keypair:
         Load the keys from a file.
         """
         file = open(self.location, "rb")
-        keys = pickle.load(file)
+        try:
+            keys = pickle.load(file)
+        except ValueError:
+            raise ValueError("Could not load serialized keys. Possibly a Python version mismatch. "
+                             "Try deleting your keys and try running again.")
         self.keypair = pyelliptic.ECC(curve="prime256v1",
                                       pubkey_x=keys["pubkey_x"],
                                       pubkey_y=keys["pubkey_y"],

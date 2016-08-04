@@ -1,7 +1,7 @@
 import random
 
-from dslink.DSLink import DSLink, Configuration
-from dslink.Node import Node
+from dslink import DSLink, Configuration
+from dslink import Node
 from twisted.internet import reactor
 
 

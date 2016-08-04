@@ -1,10 +1,10 @@
-from dslink.Util import *
-from dslink.Value import Value
-from dslink.storage.Storage import StorageDriver
-
 import copy
 import os
 import pickle
+
+from .Storage import StorageDriver
+from .Util import *
+from .Value import Value
 
 
 class FileStorage(StorageDriver):

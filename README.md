@@ -3,12 +3,12 @@
 
 DSLink SDK for Python.
 
-**This DSLink SDK isn't finished yet. Most features are done, but the API is not considered stable or frozen yet.**
+**This DSLink SDK isn't finished yet. Many features are implemented, but the API is not considered stable yet.**
 
 ## Using the SDK
 We're publishing the DSLink package to [PyPI](https://pypi.python.org/pypi/dslink).
 For Windows, you'll need [Win32OpenSSL](https://slproweb.com/products/Win32OpenSSL.html).
-It currently only runs on Python 2, but Python 3 support is planned.
+Compatible with Python 2 and Python 3(experimental).
 
 ## Developing the SDK
 

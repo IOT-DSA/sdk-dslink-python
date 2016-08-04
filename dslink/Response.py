@@ -14,7 +14,7 @@ class ListResponse(Response):
         self.node = self.process(json["updates"])
 
     def process(self, update):
-        from dslink.Node import RemoteNode
+        from .Node import RemoteNode
         node = RemoteNode(self.path.split("/")[-1], None)
         node.path = self.path
         node.link = None

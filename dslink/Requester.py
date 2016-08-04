@@ -1,4 +1,4 @@
-from dslink.Response import *
+from .Response import *
 
 
 class Requester:

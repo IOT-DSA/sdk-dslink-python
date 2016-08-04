@@ -1,4 +1,4 @@
-from dslink.Util import base64_add_padding
+from .Util import base64_add_padding
 
 import base64
 import json
