@@ -25,7 +25,7 @@ class Responder:
         :return:
         """
         # Load or create an empty Node structure
-        self.super_root = self.load_nodes()
+        self.load_nodes()
         self.create_defs()
 
         # Start saving timer
@@ -69,7 +69,7 @@ class Responder:
                 nodes_file = open(nodes_path, "r")
                 obj = json.load(nodes_file)
                 nodes_file.close()
-                return Node.from_json(obj, None, "", link=self.link)
+                self.super_root = Node.from_json(obj, None, "", link=self.link)
             except Exception as e:
                 print(e)
                 self.link.logger.error("Unable to load nodes data")
@@ -81,15 +81,18 @@ class Responder:
                         nodes_file = open(nodes_path, "r")
                         obj = json.load(nodes_file)
                         nodes_file.close()
-                        return Node.from_json(obj, None, "", link=self.link)
+                        self.super_root Node.from_json(obj, None, "", link=self.link)
                     except:
                         self.link.logger.error("Unable to restore nodes, using default")
-                        return self.link.get_default_nodes(self.create_empty_super_root())
+                        fresh = True
                 else:
                     self.link.logger.warn("Backup nodes data doesn't exist, using default")
-                    return self.link.get_default_nodes(self.create_empty_super_root())
+                    fresh = True
         else:
-            return self.link.get_default_nodes(self.create_empty_super_root())
+            fresh = True
+        if fresh:
+			self.super_root = self.create_empty_super_root()
+			self.link.get_default_nodes(self.super_root)
 
     def save_nodes(self):
         """
