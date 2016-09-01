@@ -81,7 +81,7 @@ class Responder:
                         nodes_file = open(nodes_path, "r")
                         obj = json.load(nodes_file)
                         nodes_file.close()
-                        self.super_root Node.from_json(obj, None, "", link=self.link)
+                        self.super_root = Node.from_json(obj, None, "", link=self.link)
                     except:
                         self.link.logger.error("Unable to restore nodes, using default")
                         fresh = True
