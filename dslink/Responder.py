@@ -91,8 +91,8 @@ class Responder:
         else:
             fresh = True
         if fresh:
-			self.super_root = self.create_empty_super_root()
-			self.link.get_default_nodes(self.super_root)
+            self.super_root = self.create_empty_super_root()
+            self.link.get_default_nodes(self.super_root)
 
     def save_nodes(self):
         """
