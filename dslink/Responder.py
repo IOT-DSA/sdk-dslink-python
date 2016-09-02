@@ -64,6 +64,7 @@ class Responder:
         Load nodes.json file from disk, use backup if necessary. If that fails, then reset to defaults.
         """
         nodes_path = self.link.config.nodes_path
+        fresh = False
         if os.path.exists(nodes_path):
             try:
                 nodes_file = open(nodes_path, "r")
