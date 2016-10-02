@@ -40,9 +40,10 @@ class DSLink:
         self.logger = self.create_logger("DSLink", self.config.log_level)
         self.logger.info("Starting DSLink")
 
-        # Signal setup
-        signal.signal(signal.SIGINT, self.stop)
-        signal.signal(signal.SIGTERM, self.stop)
+        if not self.config.disable_signals:
+            # Signal setup
+            signal.signal(signal.SIGINT, self.stop)
+            signal.signal(signal.SIGTERM, self.stop)
 
         # Requester and Responder setup
         if self.config.requester:
@@ -65,7 +66,10 @@ class DSLink:
 
         self.logger.info("Started DSLink")
         self.logger.debug("Starting reactor")
-        reactor.run(installSignalHandlers=False)
+        if not self.config.disable_signals:
+            reactor.run(installSignalHandlers=False)
+        else:
+            reactor.run()
 
     def start(self):
         """
@@ -161,7 +165,7 @@ class Configuration:
     """
 
     def __init__(self, name, responder=False, requester=False, ping_time=30, keypair_path=".keys",
-                 nodes_path="nodes.json", no_save_nodes=False):
+                 nodes_path="nodes.json", no_save_nodes=False, disable_signals=False):
         """
         Object that contains configuration for the DSLink.
         :param name: DSLink name.
@@ -171,6 +175,7 @@ class Configuration:
         :param keypair_path: Path to save keypair, default is ".keys".
         :param nodes_path: Path to save nodes.json, default is "nodes.json".
         :param no_save_nodes: Don't use nodes.json, default is False.
+        :param disable_signals: Disable the installation of Python signals.
         """
         if not responder and not requester:
             raise ValueError("DSLink is neither responder nor requester.")
@@ -190,6 +195,7 @@ class Configuration:
         self.keypair_path = keypair_path
         self.nodes_path = nodes_path
         self.no_save_nodes = no_save_nodes
+        self.disable_signals = disable_signals
 
         if self.log_level == "critical":
             self.log_level = logging.CRITICAL
