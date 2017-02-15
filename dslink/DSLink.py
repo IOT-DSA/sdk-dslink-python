@@ -4,10 +4,10 @@ import hashlib
 import logging
 import signal
 from twisted.internet import reactor
-try:
+try:  # python v2 first, v3+ upon exception:
     from urlparse import urlparse
 except ImportError:
-    from urllib import parse as urlparse
+    from urllib.parse import urlparse
 
 from .FileStorage import FileStorage
 from .Crypto import Keypair
@@ -30,6 +30,7 @@ class DSLink:
         """
         self.active = False
         self.needs_auth = False
+        self.shared_secret = ''  # TODO this is only a syntax hack, to avoid undefined var in get_auth()
 
         # DSLink Configuration
         self.config = config
@@ -117,7 +118,7 @@ class DSLink:
         :return: Auth parameter.
         """
         auth = self.server_config["salt"].encode("ascii", "ignore")
-        auth += self.shared_secret
+        auth += self.shared_secret  # TODO should be set in __init__ cf. above
         auth = base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
         return auth
 
@@ -133,10 +134,7 @@ class DSLink:
         if token is not None:
             websocket_uri += token
         url = urlparse(websocket_uri)
-        if url.port is None:
-            port = 80
-        else:
-            port = url.port
+        port = 80 if url.port is None else url.port
         return websocket_uri, url, port
 
     @staticmethod
@@ -197,7 +195,7 @@ class Configuration:
         self.name = name
         self.dsid = None
         self.broker = args.broker
-        self.log_level = args.log.lower()
+        self.log_level = getattr(logging, args.log.upper(), logging.NOTSET)
         self.token = args.token
         self.responder = responder
         self.requester = requester
@@ -207,24 +205,12 @@ class Configuration:
         self.no_save_nodes = no_save_nodes
         self.disable_signals = disable_signals
 
-        if self.log_level == "critical":
-            self.log_level = logging.CRITICAL
-        elif self.log_level == "error":
-            self.log_level = logging.ERROR
-        elif self.log_level == "warning":
-            self.log_level = logging.WARNING
-        elif self.log_level == "info":
-            self.log_level = logging.INFO
-        elif self.log_level == "debug":
-            self.log_level = logging.DEBUG
-        elif self.log_level == "none":
-            self.log_level = logging.NOTSET
-
     @staticmethod
     def token_hash(dsid, token):
-        if token is not None and len(token) > 16:
-            token_id = token[0:16]
-            hash_str = base64.urlsafe_b64encode(hashlib.sha256((dsid + token)).digest()).decode("utf-8").replace("=", "")
-            return "&token=" + token_id + hash_str
+        pad = 16
+        if token is not None and len(token) > pad:
+            token_id = token[:pad]
+            hash_str = base64.urlsafe_b64encode(hashlib.sha256((dsid + token)).digest())
+            return "&token=" + token_id + hash_str.decode('utf-8').replace('=', '')
         else:
             return None
