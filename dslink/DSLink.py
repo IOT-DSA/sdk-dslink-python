@@ -63,7 +63,7 @@ class DSLink:
         self.wsp = None
         self.websocket = WebSocket(self)
 
-        self.call_later(1, self.start)
+        self.start()
 
         self.logger.info("Started DSLink")
         self.logger.debug("Starting reactor")
