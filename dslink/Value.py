@@ -79,14 +79,13 @@ class Value:
         elif self.is_enum(self.type):
             return value in self.get_enum_values(self.type)
         elif self.type == "binary":
-            return type(value) == bytearray
+            return type(value) == bytearray or type(value) == str
         elif self.type == "map":
             return type(value) == map
         elif self.type == "array":
             return type(value) == list
         elif self.type == "dynamic":
-            # TODO(logangorence): Check to ensure that the type is still a valid one that we accept.
-            return True
+            raise ValueError("Invalid type")
 
     @staticmethod
     def build_enum(values):

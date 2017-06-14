@@ -1,7 +1,7 @@
 import json
 import msgpack
 
-from dslink.JsonSerializer import JsonEncoder
+from dslink.Util import base64_encode
 
 
 class Serializer:
@@ -35,6 +35,14 @@ class Serializer:
         :return: Data in serialized form
         """
         raise NotImplementedError()
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, bytearray):
+            return "\x1Bbytes:" + base64_encode(obj)
+        else:
+            return json.JSONEncoder.default(self, obj)
 
 
 class JsonSerializer(Serializer):

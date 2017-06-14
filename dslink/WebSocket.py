@@ -1,5 +1,4 @@
 from dslink.Serializers import JsonSerializer, MsgPackSerializer
-from .JsonSerializer import JsonEncoder
 from .Request import Request
 from .Response import Response
 
@@ -182,8 +181,8 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         payload["msg"] = self.msg
         self.msg += 1
-        payload = self.serializer.dump(payload)
-        self.logger.debug("Sent data: %s" % payload)
-        if not self.serializer.is_binary():
-            payload = payload.encode("utf-8")
-        super(DSAWebSocket, self).sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)
+        data = self.serializer.dump(payload)
+        self.logger.debug("Sent data: %s" % data)
+        #if not self.serializer.is_binary():
+            #data = payload.encode("utf-8")
+        super(DSAWebSocket, self).sendMessage(data, self.serializer.is_binary(), fragmentSize, sync, doNotCompress)
