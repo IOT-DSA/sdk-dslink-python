@@ -2,7 +2,7 @@ import dslink
 
 
 class RecurseDSLink(dslink.DSLink):
-    def start(self):
+    def on_connected(self):
         self.requester.list("/", self.recurse)
 
     def recurse(self, listresponse):

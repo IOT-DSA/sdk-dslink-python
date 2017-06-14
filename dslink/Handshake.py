@@ -45,5 +45,5 @@ class Handshake:
                 return True
         except requests.exceptions.ConnectionError:
             pass
-        self.link.logger.info("Failed to connect to %s" % url)
+        self.link.logger.info("Failed to handshake %s" % url)
         return False

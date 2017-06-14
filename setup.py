@@ -6,7 +6,7 @@ setup(
     description="DSLink SDK for Python",
     url="http://github.com/IOT-DSA/sdk-dslink-python",
     author="Logan Gorence",
-    author_email="l.gorence@dglogik.com",
+    author_email="Logan.Gorence@AcuityBrands.com",
     license="Apache 2.0",
     packages=[
         "dslink",

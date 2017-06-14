@@ -38,7 +38,7 @@ class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
         self.cooldown = 1
     
     def clientConnectionFailed(self, connector, reason):
-        self.link.logger.info("Failed to connect")
+        self.link.logger.info("Failed to connect to WebSocket")
         reactor.callLater(1, self.reconnect, connector)
 
     def clientConnectionLost(self, connector, unused_reason):
@@ -88,7 +88,8 @@ class DSAWebSocket(WebSocketClientProtocol):
         WebSocket open event.
         """
         self.link.active = True
-        self.logger.info("WebSocket Connection Established")
+        self.logger.info("Connected")
+        self.link.on_connected()
         task.LoopingCall(self.sendPingMsg).start(self.link.config.ping_time)
 
     def onClose(self, wasClean, code, reason):
@@ -99,7 +100,8 @@ class DSAWebSocket(WebSocketClientProtocol):
         :param reason: Close reason.
         """
         self.link.active = False
-        self.logger.info("WebSocket Connection Lost")
+        self.logger.info("Disconnected")
+        self.link.on_disconnected()
 
     def onMessage(self, payload, isBinary):
         """

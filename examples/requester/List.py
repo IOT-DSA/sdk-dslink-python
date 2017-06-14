@@ -2,7 +2,7 @@ import dslink
 
 
 class ListDSLink(dslink.DSLink):
-    def start(self):
+    def on_connected(self):
         self.requester.list("/", self.list)
 
     def list(self, listresponse):

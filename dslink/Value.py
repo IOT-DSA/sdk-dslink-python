@@ -119,3 +119,16 @@ class Value:
             except:
                 return False
         return False
+
+
+class ValueType:
+    number = "number"
+    int = "int"
+    uint = "uint"
+    string = "string"
+    bool = "bool"
+    enum = "enum"
+    binary = "binary"
+    map = "map"
+    array = "array"
+    dynamic = "dynamic"

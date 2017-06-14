@@ -73,8 +73,20 @@ class DSLink:
 
     def start(self):
         """
-        Called once the DSLink is initialized and connected.
-        Override this rather than the constructor.
+        Called once the DSLink is initialized. Used to initialize
+        your own code.
+        """
+        pass
+
+    def on_connected(self):
+        """
+        Called when the DSLink connects to the broker.
+        """
+        pass
+
+    def on_disconnected(self):
+        """
+        Called when the DSLink disconnects from the broker.
         """
         pass
 

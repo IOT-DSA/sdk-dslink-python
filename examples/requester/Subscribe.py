@@ -3,7 +3,7 @@ from twisted.internet import reactor
 
 
 class SubscribeDSLink(dslink.DSLink):
-    def start(self):
+    def on_connected(self):
         self.requester.subscribe("/sys/dataOutPerSecond", self.value_update)
         reactor.callLater(5, self.unsubscribe)
 

@@ -199,7 +199,7 @@ class LocalSubscriptionManager:
                     ]
                 ]
             })
-        if len(msg["responses"]) is not 0:
+        if len(msg["responses"]) > 0:
             self.link.wsp.sendMessage(msg)
 
 
