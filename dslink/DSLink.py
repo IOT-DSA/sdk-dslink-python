@@ -127,7 +127,7 @@ class DSLink:
         Get full WebSocket URL.
         :return: WebSocket URL.
         """
-        websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s" % self.dsid
+        websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s&format=%s" % (self.dsid, self.config.comm_format)
         if self.needs_auth:
             websocket_uri += "&auth=%s" % self.get_auth()
         token = self.config.token_hash(self.dsid, self.config.token)
@@ -173,7 +173,7 @@ class Configuration:
     """
 
     def __init__(self, name, responder=False, requester=False, ping_time=30, keypair_path=".keys",
-                 nodes_path="nodes.json", no_save_nodes=False, disable_signals=False):
+                 nodes_path="nodes.json", no_save_nodes=False, disable_signals=False, comm_format=""):
         """
         Object that contains configuration for the DSLink.
         :param name: DSLink name.
@@ -184,6 +184,7 @@ class Configuration:
         :param nodes_path: Path to save nodes.json, default is "nodes.json".
         :param no_save_nodes: Don't use nodes.json, default is False.
         :param disable_signals: Disable the installation of Python signals.
+        :param comm_format: Changes default communications format, usually "json" or "msgpack".
         """
         if not responder and not requester:
             raise ValueError("DSLink is neither responder nor requester.")
@@ -204,6 +205,7 @@ class Configuration:
         self.nodes_path = nodes_path
         self.no_save_nodes = no_save_nodes
         self.disable_signals = disable_signals
+        self.comm_format = comm_format
 
     @staticmethod
     def token_hash(dsid, token):

@@ -20,12 +20,13 @@ class Handshake:
     def get_publickey(self):
         return self.keypair.encoded_public
 
-    def get_json(self):
+    def get_handshake_request(self):
         return json.dumps({
             "publicKey": self.get_publickey(),
             "isRequester": self.link.config.requester,
             "isResponder": self.link.config.responder,
-            "version": "1.1.1"
+            "version": "1.1.2",
+            "formats": (["msgpack", "json"] if self.link.config.comm_format == "" else [self.link.config.comm_format])
         }, sort_keys=True)
 
     def run_handshake(self):
@@ -35,9 +36,14 @@ class Handshake:
             url += token
         self.link.logger.debug("Running handshake on %s" % url)
         try:
-            response = requests.post(url, data=self.get_json())
+            handshake_body = self.get_handshake_request()
+            self.link.logger.debug("Handshake body: %s" % handshake_body)
+            response = requests.post(url, data=handshake_body)
             if response.status_code is 200:
-                self.link.server_config = json.loads(response.text)
+                server_config = json.loads(response.text)
+                self.link.server_config = server_config
+                if server_config["format"] is not None:
+                    self.link.config.comm_format = server_config["format"]
                 if "tempKey" in self.link.server_config:
                     self.link.needs_auth = True
                     self.link.shared_secret = self.keypair.keypair.get_ecdh_key(

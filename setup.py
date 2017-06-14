@@ -16,7 +16,8 @@ setup(
         "pyelliptic == 1.5.7",
         "requests == 2.10.0",
         "zope.interface == 4.2.0",
-        "Twisted == 16.3.0"
+        "Twisted == 16.3.0",
+        "msgpack-python == 0.4.8"
     ],
     use_2to3=True
 )

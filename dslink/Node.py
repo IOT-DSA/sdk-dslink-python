@@ -19,10 +19,13 @@ class Node:
         :param standalone: Standalone Node structure.
         """
         self.logger = logging.getLogger("DSLink")
-        if parent is not None:
-            self.link = parent.link
-        self.parent = parent
         self.standalone = standalone
+        if parent is not None:
+            if parent.standalone:
+                self.standalone = True
+            else:
+                self.link = parent.link
+        self.parent = parent
         self.transient = False
         self.value = Value()
         self.children = {}
@@ -32,8 +35,6 @@ class Node:
         self.streams = []
         self.removed_children = []
         self.removed_children_lock = Lock()
-        # TODO(logangorence): Deprecate for v0.6
-        self.set_value_callback = None
         # TODO(logangorence): Normalize path?
         if parent is not None:
             self.name = name
@@ -83,12 +84,10 @@ class Node:
         """
         # Set value and updated timestamp
         i = self.value.set_value(value, check)
-        if i and (not self.standalone or self.link_is_active()):
+        if i and (not self.standalone and self.link_is_active()):
             self.nodes_changed()
             self.update_subscribers_values()
             if trigger_callback:
-                if hasattr(self.set_value_callback, "__call__"):
-                    self.set_value_callback(node=self, value=value)
                 try:
                     self.link.responder.profile_manager.get_profile(self.get_config("$is")).run_set_callback((self, value))
                 except ValueError:
@@ -144,7 +143,8 @@ class Node:
         """
         Set the Node structure as changed.
         """
-        self.link.responder.nodes_changed = True
+        if not self.standalone:
+            self.link.responder.nodes_changed = True
 
     def link_is_active(self):
         """

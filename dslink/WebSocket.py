@@ -1,3 +1,4 @@
+from dslink.Serializers import JsonSerializer, MsgPackSerializer
 from .JsonSerializer import JsonEncoder
 from .Request import Request
 from .Response import Response
@@ -73,6 +74,12 @@ class DSAWebSocket(WebSocketClientProtocol):
         self.logger = logging.getLogger("DSLink")
         self.link = DSAWebSocket.link
         self.link.wsp = self
+        if self.link.config.comm_format == "json":
+            self.serializer = JsonSerializer()
+        elif self.link.config.comm_format == "msgpack":
+            self.serializer = MsgPackSerializer()
+        else:
+            raise NotImplementedError("Serializer specified is not implemented.")
 
     def sendPingMsg(self):
         """
@@ -109,8 +116,10 @@ class DSAWebSocket(WebSocketClientProtocol):
         :param payload: Data to send.
         :param isBinary: True if the message is binary.
         """
-        self.logger.debug("Received data: %s" % payload.decode("utf-8"))
-        i = json.loads(payload.decode("utf-8"))
+        if not isBinary:
+            payload = payload.decode("utf-8")
+        self.logger.debug("Received data: %s" % payload)
+        i = self.serializer.load(payload)
         m = {}
         ack = False
         if "requests" in i and len(i["requests"]) > 0:
@@ -173,7 +182,8 @@ class DSAWebSocket(WebSocketClientProtocol):
         """
         payload["msg"] = self.msg
         self.msg += 1
-        payload = json.dumps(payload, sort_keys=True, cls=JsonEncoder)
+        payload = self.serializer.dump(payload)
         self.logger.debug("Sent data: %s" % payload)
-        payload = payload.encode("utf-8")
+        if not self.serializer.is_binary():
+            payload = payload.encode("utf-8")
         super(DSAWebSocket, self).sendMessage(payload, isBinary, fragmentSize, sync, doNotCompress)
