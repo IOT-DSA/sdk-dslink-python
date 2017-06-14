@@ -94,8 +94,6 @@ class DSLink:
     def stop(self, *args):
         """
         Called when the DSLink is going to stop.
-        Override this if you start any threads you need to stop.
-        Be sure to call the super function.
         :param args: Signal arguments.
         """
         if self.wsp is not None:
