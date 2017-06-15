@@ -475,7 +475,7 @@ class RemoteNode(Node):
             self.path = parent_path + name
 
     def set_value(self, value, trigger_callback=False, check=True):
-        # TODO(logangorence): Set value.
+        # TODO(logangorence): Set remote value.
         pass
 
     def update_subscribers(self):

@@ -85,7 +85,9 @@ class Value:
         elif self.type == "array":
             return type(value) == list
         elif self.type == "dynamic":
-            raise ValueError("Invalid type")
+            return True
+        else:
+            raise ValueError("Type not supported")
 
     @staticmethod
     def build_enum(values):

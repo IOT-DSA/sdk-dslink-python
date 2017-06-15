@@ -1,8 +1,7 @@
-from dslink.Serializers import JsonSerializer, MsgPackSerializer
+from dslink.Serializers import serializers
 from .Request import Request
 from .Response import Response
 
-import json
 import logging
 
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
@@ -73,12 +72,12 @@ class DSAWebSocket(WebSocketClientProtocol):
         self.logger = logging.getLogger("DSLink")
         self.link = DSAWebSocket.link
         self.link.wsp = self
-        if self.link.config.comm_format == "json":
-            self.serializer = JsonSerializer()
-        elif self.link.config.comm_format == "msgpack":
-            self.serializer = MsgPackSerializer()
+
+        comm_format = self.link.config.comm_format
+        if comm_format in serializers:
+            self.serializer = serializers[comm_format]
         else:
-            raise NotImplementedError("Serializer specified is not implemented.")
+            raise NotImplementedError("Serializer %s is not implemented." % comm_format)
 
     def sendPingMsg(self):
         """
@@ -183,6 +182,6 @@ class DSAWebSocket(WebSocketClientProtocol):
         self.msg += 1
         data = self.serializer.dump(payload)
         self.logger.debug("Sent data: %s" % data)
-        #if not self.serializer.is_binary():
-            #data = payload.encode("utf-8")
-        super(DSAWebSocket, self).sendMessage(data, self.serializer.is_binary(), fragmentSize, sync, doNotCompress)
+        if not self.serializer.is_binary():
+            data = data.encode("utf-8")
+        super(DSAWebSocket, self).sendMessage(data, self.serializer.is_binary(), fragmentSize, sync, True)

@@ -21,12 +21,16 @@ class Handshake:
         return self.keypair.encoded_public
 
     def get_handshake_request(self):
+        serializer_names = []
+        from dslink.Serializers import serializers
+        for key in serializers:
+            serializer_names.append(key)
         return json.dumps({
             "publicKey": self.get_publickey(),
             "isRequester": self.link.config.requester,
             "isResponder": self.link.config.responder,
             "version": "1.1.2",
-            "formats": (["msgpack", "json"] if self.link.config.comm_format == "" else [self.link.config.comm_format])
+            "formats": (serializer_names if self.link.config.comm_format == "" else [self.link.config.comm_format])
         }, sort_keys=True)
 
     def run_handshake(self):
