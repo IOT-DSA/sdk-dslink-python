@@ -1,8 +1,6 @@
 from .Response import Response
 from .Value import Value
 
-from collections import OrderedDict
-import logging
 from threading import Lock
 
 
@@ -18,20 +16,27 @@ class Node:
         :param parent: Node parent.
         :param standalone: Standalone Node structure.
         """
-        self.logger = logging.getLogger("DSLink")
+        self.link = None
         self.standalone = standalone
         if parent is not None:
             if parent.standalone:
                 self.standalone = True
             else:
                 self.link = parent.link
+        if self.link is not None:
+            self.log = True
+            self.logger = self.link.logger
+        else:
+            self.log = False
         self.parent = parent
         self.transient = False
         self.value = Value()
         self.children = {}
         self.children_lock = Lock()
-        self.config = OrderedDict([("$is", "node")])
-        self.attributes = OrderedDict()
+        self.config = {
+            "$is": "node"
+        }
+        self.attributes = {}
         self.streams = []
         self.removed_children = []
         self.removed_children_lock = Lock()
@@ -325,7 +330,8 @@ class Node:
                         return None
             except KeyError:
                 import traceback
-                self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))
+                if self.log:
+                    self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))
 
     def set_config_attr(self, path, value):
         """
@@ -372,7 +378,8 @@ class Node:
         :param params: Parameters of invoke.
         :return: Columns and values
         """
-        self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
+        if self.log:
+            self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         try:
             # noinspection PyCallingNonCallable
             return (self.config["$columns"] if "$columns" in self.config else []), self.link.responder.profile_manager.get_profile(self.get_config("$is")).run_callback((self, params))
