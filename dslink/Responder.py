@@ -14,6 +14,7 @@ class Responder:
         :param link: DSLink instance.
         """
         self.link = link
+        self.super_root = None
         self.nodes_changed = False
         self.subscription_manager = LocalSubscriptionManager(link)
         self.stream_manager = StreamManager(link)
@@ -58,7 +59,6 @@ class Responder:
         super_root.link = self.link
         return super_root
 
-    # noinspection PyBroadException
     def load_nodes(self):
         """
         Load nodes.json file from disk, use backup if necessary. If that fails, then reset to defaults.
@@ -72,8 +72,8 @@ class Responder:
                 nodes_file.close()
                 self.super_root = Node.from_json(obj, None, "", link=self.link)
             except Exception as e:
-                print(e)
                 self.link.logger.error("Unable to load nodes data")
+                self.link.logger.error(e)
                 if os.path.exists(nodes_path + ".bak"):
                     try:
                         self.link.logger.warn("Restoring backup nodes")
@@ -112,7 +112,6 @@ class Responder:
             self.nodes_changed = False
 
 
-# TODO: maybe rename to something more fitting?
 class Subscription:
     def __init__(self, path, sid_qos):
         self.path = path

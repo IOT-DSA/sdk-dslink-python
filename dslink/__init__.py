@@ -6,7 +6,7 @@ from .Profile import Profile
 from .Requester import Requester
 from .Response import *
 from .Storage import StorageDriver
-from .Value import Value
+from .Value import Value, ValueType
 
 __title__ = "dslink"
 __version__ = "0.7.0"
