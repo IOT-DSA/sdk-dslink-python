@@ -7,18 +7,8 @@ DSLink SDK for Python.
 
 ## Using the SDK
 We're publishing the DSLink package to [PyPI](https://pypi.python.org/pypi/dslink).
-For Windows, you'll need [Win32OpenSSL](https://slproweb.com/products/Win32OpenSSL.html).
-Compatible with Python 2 and Python 3(experimental).
 
 ## Developing the SDK
-
-### Windows Setup
-
-1. Clone this repository.
-2. Install OpenSSL from https://slproweb.com/products/Win32OpenSSL.html.
-3. ```python setup.py install```
-
-### Linux
 
 1. Clone this repository.
 2. ```sudo python setup.py install```
