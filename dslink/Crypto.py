@@ -2,7 +2,9 @@ import base64
 import hashlib
 import os.path
 import pickle
-import pyelliptic
+#import pyelliptic
+from rubenesque.codecs.sec import encode, decode
+import rubenesque.curves
 
 
 class Keypair:
@@ -21,15 +23,16 @@ class Keypair:
             self.save_keys()
         else:
             self.load_keys()
-        sha = hashlib.sha256(self.keypair.get_pubkey())
+        pubkey = self.keypair.generator() * self.keypair.private_key()
+        sha = hashlib.sha256(encode(pubkey))
         self.b64 = base64.urlsafe_b64encode(sha.digest()).decode("utf-8").replace("=", "")
-        self.encoded_public = base64.urlsafe_b64encode(self.keypair.get_pubkey()).decode("utf-8").replace("=", "")
+        self.encoded_public = base64.urlsafe_b64encode(encode(pubkey)).decode("utf-8").replace("=", "")
 
     def generate_key(self):
         """
         Generate a key.
         """
-        self.keypair = pyelliptic.ECC(curve="prime256v1")
+        self.keypair = rubenesque.curves.find("secp256r1")
 
     def load_keys(self):
         """
@@ -40,12 +43,13 @@ class Keypair:
             keys = pickle.load(file)
         except ValueError:
             raise ValueError("Could not load serialized keys. Possibly a Python version mismatch. "
-                             "Try deleting your keys and try running again.")
-        self.keypair = pyelliptic.ECC(curve="prime256v1",
-                                      pubkey_x=keys["pubkey_x"],
-                                      pubkey_y=keys["pubkey_y"],
-                                      raw_privkey=keys["privkey"])
-        file.close()
+                             "Try deleting your .keys file and try running again.")
+        #self.keypair = pyelliptic.ECC(curve="prime256v1",
+                                      #pubkey_x=keys["pubkey_x"],
+                                      #pubkey_y=keys["pubkey_y"],
+                                      #raw_privkey=keys["privkey"])
+        self.keypair = rubenesque.curves.find("secp256r1")
+        self.keypair.create(keys["pubkey_x"], keys["pubkey_y"])
 
     def save_keys(self):
         """
@@ -53,8 +57,7 @@ class Keypair:
         """
         file = open(self.location, "wb")
         pickle.dump({
-            "pubkey_x": self.keypair.pubkey_x,
-            "pubkey_y": self.keypair.pubkey_y,
-            "privkey": self.keypair.privkey
+            "pubkey_x": self.keypair.generator().x,
+            "pubkey_y": self.keypair.generator().y
         }, file)
         file.close()

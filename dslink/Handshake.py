@@ -53,7 +53,9 @@ class Handshake:
                     self.link.shared_secret = self.keypair.keypair.get_ecdh_key(
                         base64.urlsafe_b64decode(base64_add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
                 return True
-        except requests.exceptions.ConnectionError:
-            pass
-        self.link.logger.info("Failed to handshake %s" % url)
-        return False
+            else:
+                raise Exception("Handshake returned non-200 code: %s" % response.status_code)
+        except requests.exceptions.ConnectionError as conn:
+            raise Exception("Unknown connection error while handshaking")
+        #self.link.logger.info("Failed to handshake %s" % url)
+        #return False

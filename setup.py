@@ -13,7 +13,6 @@ setup(
     ],
     install_requires=[
         "autobahn == 0.15.0",
-        "pyelliptic == 1.5.7",
         "requests == 2.10.0",
         "zope.interface == 4.2.0",
         "Twisted == 16.3.0",
