@@ -1,8 +1,11 @@
 import base64
 import unittest
 
-from dslink.Crypto import Keypair
+from dslink.Crypto import KeyPair
 from dslink.Util import base64_add_padding
+
+from dslink.rubenesque.codecs.sec import encode, decode
+from dslink.rubenesque.curves.sec import secp256r1
 
 
 class CryptoTests(unittest.TestCase):
@@ -18,4 +21,11 @@ class CryptoTests(unittest.TestCase):
         return base64.urlsafe_b64decode(base64_add_padding(data).encode("utf-8"))
 
     def test(self):
-        tempkey = Keypair.decode_tempkey(self.decode(self.serverTempPublic))
+        print(self.decode(self.clientPrivate))
+        clientPrivate = KeyPair(self.decode(self.clientPrivate))
+        clientPublic = clientPrivate.get_public_key()
+
+        expectedClientPublic = decode(secp256r1, self.clientPublic)
+        print(expectedClientPublic.x)
+
+        tempkey = KeyPair.decode_tempkey(self.decode(self.serverTempPublic))

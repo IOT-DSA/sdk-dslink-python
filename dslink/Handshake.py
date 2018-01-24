@@ -51,9 +51,9 @@ class Handshake:
                     self.link.config.comm_format = server_config["format"]
                 if "tempKey" in self.link.server_config:
                     self.link.needs_auth = True
-                    tempkey = self.keypair.decode_tempkey(
+                    tempkey = self.keypair.keypair.decode_tempkey(
                         base64.urlsafe_b64decode(base64_add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
-                    shared_secret = self.keypair.get_shared_secret(tempkey)
+                    shared_secret = self.keypair.keypair.generate_shared_secret(tempkey)
                     self.link.shared_secret = bin(shared_secret.x)[:32]
                 return True
             else:
