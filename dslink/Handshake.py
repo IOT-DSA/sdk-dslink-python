@@ -1,5 +1,7 @@
 from .Util import base64_add_padding
 
+from dslink.rubenesque.lcodec import lenc
+
 import base64
 import json
 import requests
@@ -54,7 +56,7 @@ class Handshake:
                     tempkey = self.keypair.keypair.decode_tempkey(
                         base64.urlsafe_b64decode(base64_add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
                     shared_secret = self.keypair.keypair.generate_shared_secret(tempkey)
-                    self.link.shared_secret = bin(shared_secret.x)[:32]
+                    self.link.shared_secret = lenc(shared_secret.x, 2)[:32]
                 return True
             else:
                 raise Exception("Handshake returned non-200 code: %s" % response.status_code)

@@ -1,9 +1,11 @@
 import base64
+import hashlib
 import unittest
 
 from dslink.Crypto import KeyPair
 from dslink.Util import base64_add_padding
 
+from dslink.rubenesque.lcodec import ldec, lenc
 from dslink.rubenesque.codecs.sec import encode, decode
 from dslink.rubenesque.curves.sec import secp256r1
 
@@ -17,15 +19,25 @@ class CryptoTests(unittest.TestCase):
     sharedSecret = "116128c016cf380933c4b40ffeee8ef5999167f5c3d49298ba2ebfd0502e74e3"
     hashedAuth = "V2P1nwhoENIi7SqkNBuRFcoc8daWd_iWYYDh_0Z01rs"
 
-    def decode(self, data):
+    expectedClientPrivate = 23358993843321586343730535064475550841207121451219886707870385800362784513137
+    expectedServerTempPrivate = 78133010100615632811797373657415808006086410608737048189569410094259232458313
+
+    def decode_base64(self, data):
         return base64.urlsafe_b64decode(base64_add_padding(data).encode("utf-8"))
 
     def test(self):
-        print(self.decode(self.clientPrivate))
-        clientPrivate = KeyPair(self.decode(self.clientPrivate))
+        clientPrivate = KeyPair(ldec(self.decode_base64(self.clientPrivate)))
+        self.assertEqual(clientPrivate.private_key, self.expectedClientPrivate)
         clientPublic = clientPrivate.get_public_key()
+        expectedClientPublic = decode(secp256r1, self.decode_base64(self.clientPublic))
+        self.assertEqual(clientPublic, expectedClientPublic)
 
-        expectedClientPublic = decode(secp256r1, self.clientPublic)
-        print(expectedClientPublic.x)
+        serverTempPrivate = KeyPair(ldec(self.decode_base64(self.serverTempPrivate)))
+        self.assertEqual(serverTempPrivate.private_key, self.expectedServerTempPrivate)
+        serverTempPublic = serverTempPrivate.get_public_key()
+        expectedServerTempPublic = decode(secp256r1, self.decode_base64(self.serverTempPublic))
+        self.assertEqual(serverTempPublic, expectedServerTempPublic)
 
-        tempkey = KeyPair.decode_tempkey(self.decode(self.serverTempPublic))
+        sharedSecret = clientPrivate.generate_shared_secret(serverTempPublic).x
+        auth = "0000".encode("utf-8") + sharedSecret
+        hashedAuth = base64.urlsafe_b64encode(hashlib.sha256(auth).digest())

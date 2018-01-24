@@ -30,7 +30,7 @@ class DSLink:
         """
         self.active = False
         self.needs_auth = False
-        self.shared_secret = ''  # TODO this is only a syntax hack, to avoid undefined var in get_auth()
+        self.shared_secret = ""
 
         # DSLink Configuration
         self.config = config
@@ -117,10 +117,9 @@ class DSLink:
         Get auth parameter for connection.
         :return: Auth parameter.
         """
-        auth = self.server_config["salt"].encode("utf-8", "ignore")
-        auth += self.shared_secret  # TODO should be set in __init__ cf. above
-        auth_encoded = base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
-        return auth_encoded
+        auth = self.server_config["salt"].encode("utf-8", "ignore") + self.shared_secret
+        # Digest with SHA256, and then base64 the result.
+        return base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
 
     def get_url(self):
         """
@@ -188,7 +187,7 @@ class Configuration:
         :param comm_format: Changes default communications format, usually "json" or "msgpack".
         """
         if not responder and not requester:
-            raise ValueError("DSLink is neither responder nor requester.")
+            raise ValueError("DSLink must be either a responder or requester")
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")
