@@ -46,16 +46,17 @@ class Handshake:
             if response.status_code is 200:
                 server_config = json.loads(response.text)
                 self.link.server_config = server_config
+                self.link.logger.debug("Server handshake body: %s" % json.dumps(server_config))
                 if server_config["format"] is not None:
                     self.link.config.comm_format = server_config["format"]
                 if "tempKey" in self.link.server_config:
                     self.link.needs_auth = True
-                    self.link.shared_secret = self.keypair.keypair.get_ecdh_key(
+                    tempkey = self.keypair.decode_tempkey(
                         base64.urlsafe_b64decode(base64_add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
+                    shared_secret = self.keypair.get_shared_secret(tempkey)
+                    self.link.shared_secret = bin(shared_secret.x)[:32]
                 return True
             else:
                 raise Exception("Handshake returned non-200 code: %s" % response.status_code)
-        except requests.exceptions.ConnectionError as conn:
+        except requests.exceptions.ConnectionError:
             raise Exception("Unknown connection error while handshaking")
-        #self.link.logger.info("Failed to handshake %s" % url)
-        #return False

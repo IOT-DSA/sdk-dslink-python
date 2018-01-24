@@ -2,9 +2,9 @@ import base64
 import hashlib
 import os.path
 import pickle
-#import pyelliptic
 from rubenesque.codecs.sec import encode, decode
-import rubenesque.curves
+from rubenesque.curves import find
+from rubenesque.curves.sec import secp256r1
 
 
 class Keypair:
@@ -17,22 +17,20 @@ class Keypair:
         Keypair Constructor.
         """
         self.location = location
-        self.keypair = None
+        self.curve = find("secp256r1")
+        self.private_key = self.curve.private_key()
         if not os.path.isfile(self.location):
-            self.generate_key()
+            pass
             self.save_keys()
         else:
             self.load_keys()
-        pubkey = self.keypair.generator() * self.keypair.private_key()
-        sha = hashlib.sha256(encode(pubkey))
+        self.public_key = self.curve.generator() * self.private_key
+        sha = hashlib.sha256(encode(self.public_key, False))
         self.b64 = base64.urlsafe_b64encode(sha.digest()).decode("utf-8").replace("=", "")
-        self.encoded_public = base64.urlsafe_b64encode(encode(pubkey)).decode("utf-8").replace("=", "")
+        self.encoded_public = base64.urlsafe_b64encode(encode(self.public_key, False)).decode("utf-8").replace("=", "")
 
-    def generate_key(self):
-        """
-        Generate a key.
-        """
-        self.keypair = rubenesque.curves.find("secp256r1")
+    def get_shared_secret(self, public_key):
+        return public_key * self.private_key
 
     def load_keys(self):
         """
@@ -42,14 +40,9 @@ class Keypair:
         try:
             keys = pickle.load(file)
         except ValueError:
-            raise ValueError("Could not load serialized keys. Possibly a Python version mismatch. "
+            raise ValueError("Could not load serialized key. Possibly a Python version mismatch. "
                              "Try deleting your .keys file and try running again.")
-        #self.keypair = pyelliptic.ECC(curve="prime256v1",
-                                      #pubkey_x=keys["pubkey_x"],
-                                      #pubkey_y=keys["pubkey_y"],
-                                      #raw_privkey=keys["privkey"])
-        self.keypair = rubenesque.curves.find("secp256r1")
-        self.keypair.create(keys["pubkey_x"], keys["pubkey_y"])
+        self.private_key = keys["private"]
 
     def save_keys(self):
         """
@@ -57,7 +50,14 @@ class Keypair:
         """
         file = open(self.location, "wb")
         pickle.dump({
-            "pubkey_x": self.keypair.generator().x,
-            "pubkey_y": self.keypair.generator().y
+            "private": self.private_key
         }, file)
         file.close()
+
+    @staticmethod
+    def decode_tempkey(bytes):
+        return decode(secp256r1, bytes)
+
+    @staticmethod
+    def encode_shared_secret(point):
+        return encode(point, False)
