@@ -55,8 +55,7 @@ class Handshake:
                     self.link.needs_auth = True
                     tempkey = self.keypair.keypair.decode_tempkey(
                         base64.urlsafe_b64decode(base64_add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
-                    shared_secret = self.keypair.keypair.generate_shared_secret(tempkey)
-                    self.link.shared_secret = lenc(shared_secret.x, 2)[:32]
+                    self.link.shared_secret = self.keypair.keypair.generate_shared_secret(tempkey)
                 return True
             else:
                 raise Exception("Handshake returned non-200 code: %s" % response.status_code)

@@ -2,6 +2,8 @@ import base64
 import hashlib
 import os.path
 import pickle
+
+from rubenesque.lcodec import lenc
 from rubenesque.codecs.sec import encode, decode
 from rubenesque.curves import find
 from rubenesque.curves.sec import secp256r1
@@ -61,10 +63,6 @@ class Crypto:
         }, file)
         file.close()
 
-    @staticmethod
-    def encode_shared_secret(point):
-        return encode(point, False)
-
 
 class KeyPair:
     def __init__(self, private_key):
@@ -74,7 +72,13 @@ class KeyPair:
         return curve.generator() * self.private_key
 
     def generate_shared_secret(self, public_key):
-        return public_key * self.private_key
+        shared_key = public_key * self.private_key
+        shared_secret = lenc(shared_key.x, 2)
+        if len(shared_secret) > 32:
+            shared_secret = shared_secret[:32]
+        elif len(shared_secret) < 32:
+            shared_secret = shared_secret.rjust(32, 0)
+        return shared_secret
 
     @staticmethod
     def generate_private_key():
