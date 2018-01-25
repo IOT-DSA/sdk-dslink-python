@@ -10,4 +10,5 @@ nodes.json
 nodes.json.bak
 examples/*/storage/
 /packages*/
+/venv/
 

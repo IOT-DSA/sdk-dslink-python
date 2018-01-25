@@ -10,7 +10,7 @@ except ImportError:
     from urllib.parse import urlparse
 
 from .FileStorage import FileStorage
-from .Crypto import Keypair
+from .Crypto import Crypto
 from .Handshake import Handshake
 from .Requester import Requester
 from .Responder import Responder
@@ -30,7 +30,7 @@ class DSLink:
         """
         self.active = False
         self.needs_auth = False
-        self.shared_secret = ''  # TODO this is only a syntax hack, to avoid undefined var in get_auth()
+        self.shared_secret = ""
 
         # DSLink Configuration
         self.config = config
@@ -54,7 +54,7 @@ class DSLink:
             self.responder.start()
 
         # DSLink setup
-        self.keypair = Keypair(self.config.keypair_path)
+        self.keypair = Crypto(self.config.keypair_path)
         self.handshake = Handshake(self, self.keypair)
         self.handshake.run_handshake()
         self.dsid = self.handshake.get_dsid()
@@ -117,17 +117,17 @@ class DSLink:
         Get auth parameter for connection.
         :return: Auth parameter.
         """
-        auth = self.server_config["salt"].encode("ascii", "ignore")
-        auth += self.shared_secret  # TODO should be set in __init__ cf. above
-        auth = base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
-        return auth
+        auth = self.server_config["salt"].encode("utf-8", "ignore") + self.shared_secret
+        # Digest with SHA256, and then base64 the result.
+        return base64.urlsafe_b64encode(hashlib.sha256(auth).digest()).decode("utf-8").replace("=", "")
 
     def get_url(self):
         """
         Get full WebSocket URL.
         :return: WebSocket URL.
         """
-        websocket_uri = self.config.broker[:-5].replace("http", "ws") + "/ws?dsId=%s&format=%s" % (self.dsid, self.config.comm_format)
+        websocket_uri = self.config.broker[:-5].replace("http", "ws") +\
+            "/ws?dsId=%s&format=%s" % (self.dsid, self.config.comm_format)
         if self.needs_auth:
             websocket_uri += "&auth=%s" % self.get_auth()
         token = self.config.token_hash(self.dsid, self.config.token)
@@ -187,7 +187,7 @@ class Configuration:
         :param comm_format: Changes default communications format, usually "json" or "msgpack".
         """
         if not responder and not requester:
-            raise ValueError("DSLink is neither responder nor requester.")
+            raise ValueError("DSLink must be either a responder or requester")
         parser = argparse.ArgumentParser()
         parser.add_argument("--broker", default="http://localhost:8080/conn")
         parser.add_argument("--log", default="info")
