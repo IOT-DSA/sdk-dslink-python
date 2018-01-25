@@ -20,14 +20,18 @@ class Crypto:
         Keypair Constructor.
         """
         self.location = location
+        self.keypair = None
         if not os.path.isfile(self.location):
-            self.keypair = KeyPair(KeyPair.generate_private_key())
+            self.generate()
             self.save_keys()
         else:
             self.load_keys()
         sha = hashlib.sha256(encode(self.keypair.get_public_key(), False))
         self.b64 = base64.urlsafe_b64encode(sha.digest()).decode("utf-8").replace("=", "")
         self.encoded_public = base64.urlsafe_b64encode(encode(self.keypair.get_public_key(), False)).decode("utf-8").replace("=", "")
+
+    def generate(self):
+        self.keypair = KeyPair(KeyPair.generate_private_key())
 
     def load_keys(self):
         """
@@ -39,7 +43,13 @@ class Crypto:
         except ValueError:
             raise ValueError("Could not load serialized key. Possibly a Python version mismatch. "
                              "Try deleting your .keys file and try running again.")
-        self.keypair = KeyPair(keys["private"])
+
+        # pyelliptic migration
+        if "privkey" in keys:
+            self.generate()
+            self.save_keys()
+        else:
+            self.keypair = KeyPair(keys["private"])
 
     def save_keys(self):
         """
