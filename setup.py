@@ -10,6 +10,10 @@ setup(
     license="Apache 2.0",
     packages=[
         "dslink",
+        "dslink.rubenesque",
+        "dslink.rubenesque.codecs",
+        "dslink.rubenesque.curves",
+        "dslink.rubenesque.signatures",
     ],
     install_requires=[
         "autobahn == 0.15.0",

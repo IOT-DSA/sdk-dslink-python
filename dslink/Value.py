@@ -1,5 +1,6 @@
 # coding=utf-8
 from .Util import base64_decode
+from .six import string_types
 
 from datetime import datetime
 
@@ -46,7 +47,7 @@ class Value:
         :return: True if successful.
         """
         set_val = True
-        if self.type == "binary" and isinstance(value, basestring) and value.startswith(b"\x1Bbytes:"):
+        if self.type == "binary" and isinstance(value, string_types) and value.startswith(b"\x1Bbytes:"):
             value = bytearray(base64_decode(str(value[7:])))
         if check:
             set_val = self.check_type(value)
@@ -66,7 +67,7 @@ class Value:
         :return: True if matches.
         """
         if self.type == "string":
-            return isinstance(value, basestring)
+            return isinstance(value, string_types)
         elif self.type == "number":
             return type(value) == int or type(value) == long or type(value) == float
         elif self.type == "int":

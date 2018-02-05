@@ -1,5 +1,6 @@
 from .Response import Response
 from .Value import Value
+from .six import string_types
 
 from threading import Lock
 
@@ -163,7 +164,7 @@ class Node:
         Set the Node name.
         :param name: Node name.
         """
-        if not isinstance(name, basestring):
+        if not isinstance(name, string_types):
             raise ValueError("Passed profile is not a string")
         self.set_config("$name", name)
         self.update_subscribers()
@@ -173,7 +174,7 @@ class Node:
         Set invokable state.
         :param invokable: Invokable permit string or true for everyone can access.
         """
-        if isinstance(invokable, basestring):
+        if isinstance(invokable, string_types):
             self.set_config("$invokable", invokable)
         elif type(invokable) is bool and invokable:
             self.set_config("$invokable", "read")
@@ -203,7 +204,7 @@ class Node:
         Set the Node's profile.
         :param profile: Node Profile.
         """
-        if not isinstance(profile, basestring):
+        if not isinstance(profile, string_types):
             raise ValueError("Passed profile is not a string")
         self.set_config("$is", profile)
 
@@ -212,7 +213,7 @@ class Node:
         Set the writable permission.
         :param permission: Permission to set.
         """
-        if isinstance(permission, basestring):
+        if isinstance(permission, string_types):
             self.set_config("$writable", permission)
         else:
             raise ValueError("Passed permission is not string")
