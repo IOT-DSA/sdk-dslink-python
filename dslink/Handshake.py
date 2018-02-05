@@ -1,6 +1,5 @@
 from .Util import base64_add_padding
-
-from dslink.rubenesque.lcodec import lenc
+from .Serializers import serializers
 
 import base64
 import json
@@ -24,7 +23,7 @@ class Handshake:
 
     def get_handshake_request(self):
         serializer_names = []
-        from dslink.Serializers import serializers
+        from Serializers import serializers
         for key in serializers:
             serializer_names.append(key)
         return json.dumps({
@@ -58,6 +57,7 @@ class Handshake:
                     self.link.shared_secret = self.keypair.keypair.generate_shared_secret(tempkey)
                 return True
             else:
+                # It's likely that our protocol is messed up, throw an exception to die
                 raise Exception("Handshake returned non-200 code: %s" % response.status_code)
         except requests.exceptions.ConnectionError:
-            raise Exception("Unknown connection error while handshaking")
+            return False
