@@ -67,5 +67,5 @@ class MsgPackSerializer(Serializer):
 
 serializers = {
     "json": JsonSerializer(),
-    "msgpack": MsgPackSerializer()
+    #"msgpack": MsgPackSerializer()
 }
