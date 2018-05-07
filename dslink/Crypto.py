@@ -3,10 +3,10 @@ import hashlib
 import os.path
 import pickle
 
-from rubenesque.lcodec import lenc
-from rubenesque.codecs.sec import encode, decode
-from rubenesque.curves import find
-from rubenesque.curves.sec import secp256r1
+from .rubenesque.lcodec import lenc
+from .rubenesque.codecs.sec import encode, decode
+from .rubenesque.curves import find
+from .rubenesque.curves.sec import secp256r1
 
 
 curve = find("secp256r1")

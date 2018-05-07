@@ -126,16 +126,24 @@ class DSLink:
         Get full WebSocket URL.
         :return: WebSocket URL.
         """
-        websocket_uri = self.config.broker[:-5].replace("http", "ws") +\
-            "/ws?dsId=%s&format=%s" % (self.dsid, self.config.comm_format)
+        websocket_uri = self.config.broker[:-5]
+        if websocket_uri.startswith("https"):
+            websocket_uri = websocket_uri.replace("https", "wss")
+            proto_port = 443
+        elif websocket_uri.startswith("http"):
+            websocket_uri = websocket_uri.replace("http", "ws")
+            proto_port = 80
+        else:
+            raise Exception("Unrecognized protocol in URL: " % websocket_uri)
+        websocket_uri += "/ws?dsId=%s&format=%s" % (self.dsid, self.config.comm_format)
         if self.needs_auth:
             websocket_uri += "&auth=%s" % self.get_auth()
         token = self.config.token_hash(self.dsid, self.config.token)
         if token is not None:
             websocket_uri += token
         url = urlparse(websocket_uri)
-        port = 80 if url.port is None else url.port
-        return websocket_uri, url, port
+        port = proto_port if url.port is None else url.port
+        return websocket_uri
 
     @staticmethod
     def create_logger(name, log_level=logging.INFO):

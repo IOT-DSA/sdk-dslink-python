@@ -4,9 +4,9 @@ from .Response import Response
 
 import logging
 
-from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
+from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory, connectWS
 from autobahn.websocket.util import parse_url
-from twisted.internet import reactor, task
+from twisted.internet import reactor, task, ssl
 from twisted.internet.protocol import ReconnectingClientFactory
 
 
@@ -20,14 +20,19 @@ class WebSocket:
         WebSocket Constructor.
         :param link: DSLink instance.
         """
-        websocket_uri, url, port = link.get_url()
+        websocket_uri = link.get_url()
 
         DSAWebSocket.link = link
         factory = DSAWebSocketFactory(websocket_uri, link)
         factory.protocol = DSAWebSocket
 
+        if factory.isSecure:
+            context_factory = ssl.ClientContextFactory()
+        else:
+            context_factory = None
+
         link.logger.debug("Connecting WebSocket to %s" % websocket_uri)
-        self.connector = reactor.connectTCP(url.hostname, port, factory)
+        self.connector = connectWS(factory, context_factory)
 
 
 class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
@@ -45,16 +50,22 @@ class DSAWebSocketFactory(WebSocketClientFactory, ReconnectingClientFactory):
         reactor.callLater(1, self.reconnect, connector)
 
     def reconnect(self, connector):
-        if not self.link.handshake.run_handshake():
+        try:
+            if not self.link.handshake.run_handshake():
+                if self.cooldown <= 60:
+                    self.cooldown += 1
+                reactor.callLater(self.cooldown, self.reconnect, connector)
+                return
+            self.reset_url()
+            self.retry(connector)
+        except:
             if self.cooldown <= 60:
                 self.cooldown += 1
             reactor.callLater(self.cooldown, self.reconnect, connector)
-            return
-        self.reset_url()
-        self.retry(connector)
+
 
     def reset_url(self):
-        websocket_uri, url, port = self.link.get_url()
+        websocket_uri = self.link.get_url()
         self.url = websocket_uri
         (self.isSecure, self.host, self.port, self.resource, self.path, self.params) = parse_url(websocket_uri)
 

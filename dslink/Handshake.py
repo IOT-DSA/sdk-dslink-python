@@ -23,7 +23,6 @@ class Handshake:
 
     def get_handshake_request(self):
         serializer_names = []
-        from Serializers import serializers
         for key in serializers:
             serializer_names.append(key)
         return json.dumps({

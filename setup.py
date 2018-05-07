@@ -20,7 +20,8 @@ setup(
         "requests == 2.10.0",
         "zope.interface == 4.2.0",
         "Twisted == 16.3.0",
-        "msgpack-python == 0.4.8"
+        "msgpack-python == 0.4.8",
+        "pyOpenSSL == 17.5.0"
     ],
     use_2to3=True
 )
