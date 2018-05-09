@@ -45,7 +45,7 @@ class JsonSerializer(Serializer):
         return json.loads(data)
 
     def dump(self, data):
-        return json.dumps(data, sort_keys=True, cls=JsonEncoder)
+        return json.dumps(data, separators=(',', ':'), sort_keys=True, cls=JsonEncoder)
 
 
 def msgpack_encode(obj):
