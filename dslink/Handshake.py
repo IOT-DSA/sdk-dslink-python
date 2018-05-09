@@ -1,62 +1,63 @@
+import base64
+import hashlib
+import json
+import logging
+import requests
+
 from .Util import base64_add_padding
 from .Serializers import serializers
 
-import base64
-import json
-import requests
-
 
 class Handshake:
-    """
-    Class that handles the DSA Handshake.
-    """
-
-    def __init__(self, link, keypair):
-        self.link = link
-        self.keypair = keypair
-
-    def get_dsid(self):
-        return self.link.config.name + "-" + self.keypair.b64
-
-    def get_publickey(self):
-        return self.keypair.encoded_public
+    def __init__(self, config):
+        self.config = config
+        self.logger = logging.getLogger(__name__)
 
     def get_handshake_request(self):
         serializer_names = []
         for key in serializers:
             serializer_names.append(key)
         return json.dumps({
-            "publicKey": self.get_publickey(),
-            "isRequester": self.link.config.requester,
-            "isResponder": self.link.config.responder,
+            "publicKey": self.config.crypto.encoded_public,
+            "isRequester": self.config.is_requester,
+            "isResponder": self.config.is_responder,
             "version": "1.1.2",
-            "formats": (serializer_names if self.link.config.comm_format == "" else [self.link.config.comm_format])
+            # "formats": (serializer_names if self.link.config.comm_format == "" else [self.link.config.comm_format])
+            # TODO:
+            "formats": ["json"]
         }, sort_keys=True)
 
     def run_handshake(self):
-        url = self.link.config.broker + "?dsId=%s" % self.get_dsid()
-        token = self.link.config.token_hash(self.get_dsid(), self.link.config.token)
+        url = self.config.broker + "?dsId=%s" % self.config.ds_id
+        token = self.config.token_hash(self.config.ds_id, self.config.token)
         if token is not None:
             url += token
-        self.link.logger.debug("Running handshake on %s" % url)
+        self.logger.debug("Running handshake on %s" % url)
         try:
             handshake_body = self.get_handshake_request()
-            self.link.logger.debug("Handshake body: %s" % handshake_body)
+            self.logger.debug("Handshake body: %s" % handshake_body)
             response = requests.post(url, data=handshake_body)
             if response.status_code is 200:
                 server_config = json.loads(response.text)
-                self.link.server_config = server_config
-                self.link.logger.debug("Server handshake body: %s" % json.dumps(server_config))
-                if server_config["format"] is not None:
-                    self.link.config.comm_format = server_config["format"]
-                if "tempKey" in self.link.server_config:
-                    self.link.needs_auth = True
-                    tempkey = self.keypair.keypair.decode_tempkey(
-                        base64.urlsafe_b64decode(base64_add_padding(self.link.server_config["tempKey"]).encode("utf-8")))
-                    self.link.shared_secret = self.keypair.keypair.generate_shared_secret(tempkey)
+                self.config.format = server_config["format"]
+                self.config.server_config = server_config
+                self.logger.debug("Server handshake body: %s" % json.dumps(server_config))
+                if "tempKey" in server_config:
+                    self.config.temp_key = self.config.crypto.keypair.decode_tempkey(
+                        base64.urlsafe_b64decode(base64_add_padding(server_config["tempKey"]).encode("utf-8")))
+                    self.config.shared_secret = self.config.crypto.keypair.generate_shared_secret(self.config.temp_key)
+                    salt_shared_secret = server_config["salt"].encode("utf-8", "ignore") + self.config.shared_secret
+                    self.config.auth = base64.urlsafe_b64encode(
+                        hashlib.sha256(salt_shared_secret).digest()
+                    ).decode("utf-8").replace("=", "")
+                else:
+                    # Reset auth state
+                    self.config.temp_key = None
+                    self.config.shared_secret = None
+                    self.config.auth = None
                 return True
             else:
-                # It's likely that our protocol is messed up, throw an exception to die
+                # It's likely that our protocol is messed up, raise an exception to die
                 raise Exception("Handshake returned non-200 code: %s" % response.status_code)
         except requests.exceptions.ConnectionError:
             return False

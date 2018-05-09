@@ -2,7 +2,8 @@ from setuptools import setup
 
 setup(
     name="dslink",
-    version="0.7.0",
+    python_requires=">3.5.0",
+    version="0.8.0",
     description="DSLink SDK for Python",
     url="http://github.com/IOT-DSA/sdk-dslink-python",
     author="Logan Gorence",
@@ -16,12 +17,9 @@ setup(
         "dslink.rubenesque.signatures",
     ],
     install_requires=[
-        "autobahn == 0.15.0",
-        "requests == 2.10.0",
-        "zope.interface == 4.2.0",
-        "Twisted == 16.3.0",
-        "msgpack-python == 0.4.8",
+        "websockets == 4.0.1"
+        "requests == 2.18.4",
+        "msgpack-python == 0.5.6",
         "pyOpenSSL == 17.5.0"
-    ],
-    use_2to3=True
+    ]
 )

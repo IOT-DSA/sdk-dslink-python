@@ -1,0 +1,45 @@
+{
+  "name": "RNG",
+  "version": "0.1.0",
+  "description": "Example DSLink RNG",
+  "license": "Apache 2.0",
+  "author": {
+    "name": "Logan Gorence",
+    "email": "Logan.Gorence@AcuityBrands.com"
+  },
+  "main": "rng.py",
+  "engines": {
+    "python": ">=3.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IOT-DSA/sdk-dslink-python.git"
+  },
+  "bugs": {
+    "url": "https://github.com/IOT-DSA/sdk-dslink-python/issues"
+  },
+  "configs": {
+    "name": {
+      "type": "string",
+      "default": "python-rng"
+    },
+    "broker": {
+      "type": "url"
+    },
+    "token": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "path",
+      "default": "nodes.json"
+    },
+    "key": {
+      "type": "path",
+      "default": ".keys"
+    },
+    "log": {
+      "type": "enum",
+      "default": "info"
+    }
+  }
+}

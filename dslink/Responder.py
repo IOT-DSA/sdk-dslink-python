@@ -4,7 +4,6 @@ from .Node import Node
 
 import json
 import os.path
-from twisted.internet import task
 
 
 class Responder:
@@ -31,7 +30,9 @@ class Responder:
 
         # Start saving timer
         if not self.link.config.no_save_nodes:
-            task.LoopingCall(self.save_nodes).start(5)
+            # task.LoopingCall(self.save_nodes).start(5)
+            # TODO: Implement save_nodes loop
+            pass
 
     def get_super_root(self):
         """

@@ -12,7 +12,7 @@ from .rubenesque.curves.sec import secp256r1
 curve = find("secp256r1")
 
 
-class Crypto:
+class KeyPairHandler:
     """
     Class to handle keypair generation, loading, and saving.
     """
