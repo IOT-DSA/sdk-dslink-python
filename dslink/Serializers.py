@@ -31,8 +31,9 @@ class Serializer:
 
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, bytearray):
-            return "\x1Bbytes:" + base64_encode(obj)
+        if type(obj) == bytearray or type(obj) == bytes:
+            import base64
+            return "\x1Bbytes:" + base64.urlsafe_b64encode(obj).decode("utf-8")
         else:
             return json.JSONEncoder.default(self, obj)
 
@@ -50,6 +51,7 @@ class JsonSerializer(Serializer):
 
 def msgpack_encode(obj):
     if isinstance(obj, bytearray):
+        # TODO
         return "\x1Bbytes:" + base64_encode(obj)
     return obj
 
