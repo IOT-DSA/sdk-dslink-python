@@ -36,7 +36,7 @@ class Handshake:
         try:
             handshake_body = self.get_handshake_request()
             self.logger.debug("Handshake body: %s" % handshake_body)
-            response = requests.post(url, data=handshake_body)
+            response = requests.post(url, data=handshake_body, verify=False)
             if response.status_code is 200:
                 server_config = json.loads(response.text)
                 self.config.format = server_config["format"]
@@ -59,5 +59,6 @@ class Handshake:
             else:
                 # It's likely that our protocol is messed up, raise an exception to die
                 raise Exception("Handshake returned non-200 code: %s" % response.status_code)
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
+            self.link.logger.error("DSLink occurred a ConnectionError: %s" % e)
             return False

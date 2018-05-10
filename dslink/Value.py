@@ -80,7 +80,7 @@ class Value:
         elif self.is_enum(self.type):
             return value in self.get_enum_values(self.type)
         elif self.type == "binary":
-            return type(value) == bytearray or type(value) == str
+            return type(value) == bytearray or type(value) == str or type(value) == bytes
         elif self.type == "map":
             return type(value) == map
         elif self.type == "array":
