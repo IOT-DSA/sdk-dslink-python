@@ -1,8 +1,8 @@
-from .Response import Response
+import logging
+from threading import Lock
+
 from .Value import Value
 from .six import string_types
-
-from threading import Lock
 
 
 class Node:
@@ -10,25 +10,13 @@ class Node:
     Represents a Node on the Node structure.
     """
 
-    def __init__(self, name, parent, standalone=False):
+    def __init__(self, name, parent):
         """
         Node Constructor.
         :param name: Node name.
         :param parent: Node parent.
-        :param standalone: Standalone Node structure.
         """
-        self.link = None
-        self.standalone = standalone
-        if parent is not None:
-            if parent.standalone:
-                self.standalone = True
-            else:
-                self.link = parent.link
-        if self.link is not None:
-            self.log = True
-            self.logger = self.link.logger
-        else:
-            self.log = False
+        self.logger = logging.getLogger(__name__)
         self.parent = parent
         self.transient = False
         self.value = Value()
@@ -149,8 +137,9 @@ class Node:
         """
         Set the Node structure as changed.
         """
-        if not self.standalone:
-            self.link.responder.nodes_changed = True
+        # TODO
+        # if not self.standalone:
+            # self.link.responder.nodes_changed = True
 
     def link_is_active(self):
         """
@@ -271,9 +260,7 @@ class Node:
                 raise ValueError("Child %s already exists in %s" % (child.name, self.path))
             self.children[child.name] = child
         self.nodes_changed()
-
-        if self.standalone or self.link_is_active():
-            self.update_subscribers()
+        self.update_subscribers()
 
     def remove_child(self, name):
         """
@@ -330,9 +317,7 @@ class Node:
                     except KeyError:
                         return None
             except KeyError:
-                import traceback
-                if self.log:
-                    self.logger.warn("Non-existent Node requested %s on %s" % (path, self.path))
+                self.logger.warning("Non-existent Node requested %s on %s" % (path, self.path))
 
     def set_config_attr(self, path, value):
         """
@@ -379,8 +364,7 @@ class Node:
         :param params: Parameters of invoke.
         :return: Columns and values
         """
-        if self.log:
-            self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
+        self.logger.debug("%s invoked, with parameters: %s" % (self.path, params))
         try:
             # noinspection PyCallingNonCallable
             return (self.config["$columns"] if "$columns" in self.config else []), self.link.responder.profile_manager.get_profile(self.get_config("$is")).run_callback((self, params))

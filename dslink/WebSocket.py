@@ -17,11 +17,7 @@ class WebSocket:
         asyncio.get_event_loop().create_task(self.message_listener())
         return True
 
-    def reset(self):
-        self.client = None
-
-    @asyncio.coroutine
-    async def send(self, msg):
+    def send(self, msg):
         return self.client.send(msg)
 
     @asyncio.coroutine
@@ -32,3 +28,4 @@ class WebSocket:
                 await self.on_msg(msg)
             except websockets.exceptions.ConnectionClosed:
                 await self.on_close()
+                break
