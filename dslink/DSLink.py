@@ -129,10 +129,8 @@ class DSLink:
         websocket_uri = self.config.broker[:-5]
         if websocket_uri.startswith("https"):
             websocket_uri = websocket_uri.replace("https", "wss")
-            proto_port = 443
         elif websocket_uri.startswith("http"):
             websocket_uri = websocket_uri.replace("http", "ws")
-            proto_port = 80
         else:
             raise Exception("Unrecognized protocol in URL: " % websocket_uri)
         websocket_uri += "/ws?dsId=%s&format=%s" % (self.dsid, self.config.comm_format)
@@ -141,8 +139,6 @@ class DSLink:
         token = self.config.token_hash(self.dsid, self.config.token)
         if token is not None:
             websocket_uri += token
-        url = urlparse(websocket_uri)
-        port = proto_port if url.port is None else url.port
         return websocket_uri
 
     @staticmethod
