@@ -1,8 +1,10 @@
 # coding=utf-8
+from numbers import Number
+from datetime import datetime
+
 from .Util import base64_decode
 from .six import string_types
 
-from datetime import datetime
 
 TYPES = [
     "number",
@@ -69,11 +71,11 @@ class Value:
         if self.type == "string":
             return isinstance(value, string_types)
         elif self.type == "number":
-            return type(value) == int or type(value) == long or type(value) == float
+            return isinstance(value, Number)
         elif self.type == "int":
-            return type(value) == int or type(value) == long
+            return isinstance(value, Number)
         elif self.type == "uint":
-            return type(value) == int or type(value) == long and value > 0
+            return isinstance(value, Number)
         elif self.type == "bool":
             # TODO(logangorence): Implement enum-like bool. Examples: "bool[disabled,enabled]" or "bool[on,off]"
             return type(value) == bool
