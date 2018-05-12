@@ -1,8 +1,9 @@
+from collections import OrderedDict
+from threading import Lock
+
 from .Response import Response
 from .Value import Value
 from .six import string_types
-
-from threading import Lock
 
 
 class Node:
@@ -34,10 +35,8 @@ class Node:
         self.value = Value()
         self.children = {}
         self.children_lock = Lock()
-        self.config = {
-            "$is": "node"
-        }
-        self.attributes = {}
+        self.config = OrderedDict([("$is", "node")])
+        self.attributes = OrderedDict()
         self.streams = []
         self.removed_children = []
         self.removed_children_lock = Lock()
